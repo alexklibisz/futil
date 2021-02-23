@@ -1,2 +1,3 @@
 # futil
-Minimal utilities for Scala Futures
+
+Zero-dependency utilities for Scala Futures.

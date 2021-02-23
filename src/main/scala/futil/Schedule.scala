@@ -1,0 +1,5 @@
+package futil
+
+trait Schedule {
+
+}

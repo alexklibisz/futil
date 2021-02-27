@@ -16,7 +16,7 @@ jobs:
     steps:
       - run: echo $GITHUB_CONTEXT
 
-  pr:
+  sbt:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -31,5 +31,7 @@ jobs:
         run: sbt -batch compile
       - name: doc
         run: sbt -batch doc
+      - name: test-compile
+        run: sbt -batch test:compile
       - name: test
         run: sbt -batch test

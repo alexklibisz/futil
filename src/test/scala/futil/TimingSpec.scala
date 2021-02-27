@@ -16,7 +16,7 @@ class TimingSpec extends AsyncFreeSpec with Matchers {
     "100 millis" in {
       lazy val fa: Future[Int] = Future { Thread.sleep(100); 99 }
       val t0 = System.nanoTime()
-      Futil.time(fa).flatMap {
+      Futil.timed(fa).flatMap {
         case (i, duration) =>
           val dur = (System.nanoTime() - t0).nanos
           i shouldBe 99
@@ -29,7 +29,7 @@ class TimingSpec extends AsyncFreeSpec with Matchers {
 
     "100 millis success" in {
       val fa: Future[Int] = Future.successful(99)
-      Futil.time(Futil.delay(100.millis)(fa)).flatMap {
+      Futil.timed(Futil.delay(100.millis)(fa)).flatMap {
         case (i, duration) =>
           i shouldBe 99
           duration.toMillis shouldBe 100L +- 50L
@@ -39,9 +39,8 @@ class TimingSpec extends AsyncFreeSpec with Matchers {
     "100 millis failure" in {
       case class Expected() extends Throwable
       val fa: Future[Int] = Future.failed(Expected())
-      val t0 = System.nanoTime()
       val f = recoverToExceptionIf[Expected](Futil.delay(100.millis)(fa))
-      Futil.time(f).flatMap {
+      Futil.timed(f).flatMap {
         case (ex, dur) =>
           ex shouldBe Expected()
           dur.toMillis shouldBe 100L +- 50L
@@ -55,7 +54,7 @@ class TimingSpec extends AsyncFreeSpec with Matchers {
     "immediate success" in {
       val fa: Future[Int] = Future.successful(99)
       val f = Futil.deadline(100.millis)(fa)
-      Futil.time(f).flatMap {
+      Futil.timed(f).flatMap {
         case (i, duration) =>
           i shouldBe 99
           duration.toMillis shouldBe <(20L)
@@ -66,7 +65,7 @@ class TimingSpec extends AsyncFreeSpec with Matchers {
       case class Expected() extends Throwable
       val fa: Future[Int] = Future.failed(Expected())
       val f = recoverToExceptionIf[Expected](Futil.deadline(100.millis)(fa))
-      Futil.time(f).flatMap {
+      Futil.timed(f).flatMap {
         case (ex, duration) =>
           ex shouldBe Expected()
           duration.toMillis shouldBe <(20L)
@@ -76,7 +75,7 @@ class TimingSpec extends AsyncFreeSpec with Matchers {
     "success exceeds deadline" in {
       val fa: Future[Int] = Future { Thread.sleep(200); 99 }
       val f = recoverToExceptionIf[TimeoutException](Futil.deadline(100.millis)(fa))
-      Futil.time(f).flatMap {
+      Futil.timed(f).flatMap {
         case (exception, duration) =>
           exception.getClass shouldEqual classOf[TimeoutException]
           duration.toMillis shouldBe 100L +- 50L

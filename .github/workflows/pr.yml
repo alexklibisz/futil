@@ -23,6 +23,8 @@ jobs:
       - uses: olafurpg/setup-scala@v10
         with:
           java-version: 14
+      - name: update
+        run: sbt -batch update
       - name: scalafmt
         run: sbt -batch scalafmtCheckAll
       - name: compile

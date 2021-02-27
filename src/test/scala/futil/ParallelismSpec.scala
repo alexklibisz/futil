@@ -54,7 +54,7 @@ class ParallelismSpec extends AsyncFreeSpec with Matchers {
           Thread.sleep(i % 30)
           counter.decrementAndGet()
           i
-      }
+        }
 
       Futil.mapParN(n)(as)(f).flatMap { bs =>
         bs shouldBe as.map(Success(_))

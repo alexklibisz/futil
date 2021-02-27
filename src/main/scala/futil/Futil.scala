@@ -6,7 +6,11 @@ import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future, Promise, TimeoutException}
 import scala.util.Try
 
-trait Futil {
+object Futil {
+
+  object Implicits {
+    lazy implicit val timer: Timer = new Timer("futil-timer", true)
+  }
 
   /**
     * Time the execution of the given Future with nanosecond precision.
@@ -100,10 +104,4 @@ trait Futil {
       }
     }
 
-}
-
-object Futil extends Futil {
-  object Implicits {
-    lazy implicit val timer: Timer = new Timer("futil-timer", true)
-  }
 }

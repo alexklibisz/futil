@@ -29,5 +29,7 @@ jobs:
         run: sbt -batch scalafmtCheckAll
       - name: compile
         run: sbt -batch compile
+      - name: doc
+        run: sbt -batch doc
       - name: test
         run: sbt -batch test

@@ -35,8 +35,9 @@ trait Futil {
     * If it takes longer than the given direction, return a Future.failed containing a TimeoutException.
     */
   final def deadline[A](duration: Duration)(fa: => Future[A])(implicit ec: ExecutionContext, timer: Timer): Future[A] = {
-    val deadline = delay(duration)(Future.failed(new TimeoutException))
-    Future.firstCompletedOf(Seq(fa, deadline))
+    val ex = new TimeoutException(s"The given future did not complete within the given duration: $duration.")
+    val other = delay(duration)(Future.failed(ex))
+    Future.firstCompletedOf(Seq(fa, other))
   }
 
   /**

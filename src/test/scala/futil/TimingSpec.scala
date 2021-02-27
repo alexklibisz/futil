@@ -79,6 +79,7 @@ class TimingSpec extends AsyncFreeSpec with Matchers {
       Futil.timed(f).flatMap {
         case (exception, duration) =>
           exception.getClass shouldEqual classOf[TimeoutException]
+          exception.getMessage shouldBe s"The given future did not complete within the given duration: ${100.millis}."
           duration.toMillis shouldBe 100L +- 25L
       }
     }

@@ -54,23 +54,10 @@ class ParallelismSpec extends AsyncFreeSpec with Matchers {
           Thread.sleep(i % 30)
           counter.decrementAndGet()
           i
-        }
+      }
 
       Futil.mapParN(n)(as)(f).flatMap { bs =>
         bs shouldBe as.map(Success(_))
-      }
-    }
-
-    "sleeping is pipelined" in {
-
-      // The first 9 tasks each runs for 1000ms the remaining 100 run for 10ms each. 1 second total.
-      // ((9 * 1000ms) + (100 * 10ms)) / 10 = 1000ms
-      val as = (1 to 9).map(_ => 1000) ++ (1 to 100).map(_ => 10)
-      val n = 10
-      val f = (a: Int) => Future(Thread.sleep(a))
-
-      Futil.timed(Futil.mapParN(n)(as)(f)).map {
-        case (_, dur) => dur.toMillis shouldBe 1000L +- 50
       }
     }
 

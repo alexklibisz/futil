@@ -14,3 +14,5 @@ scalacOptions ++= Seq(
   "-unchecked",
   "-Xlint:unused"
 )
+
+parallelExecution in test := false

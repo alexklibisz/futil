@@ -1,0 +1,5 @@
+package futil
+
+class ParallelismSpec {
+
+}

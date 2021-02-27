@@ -18,7 +18,7 @@ trait Futil {
   }
 
   /**
-    * Run the given Future after the given Duration.
+    * Run the given Future after delaying for the given Duration.
     * If the Future is already running, then this will simply delay the return of the Future.
     */
   final def delay[A](duration: Duration)(fa: => Future[A])(implicit ec: ExecutionContext, timer: Timer): Future[A] = {

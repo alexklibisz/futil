@@ -6,11 +6,13 @@ import org.scalatest.matchers.should.Matchers
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{ExecutionContext, Future, TimeoutException}
 
+import Futil.Implicits.timer
+
 class TimingSpec extends AsyncFreeSpec with Matchers {
 
   override implicit val executionContext: ExecutionContext = ExecutionContext.global
 
-  import Futil.Implicits.timer
+  case class Expected() extends Throwable
 
   "time" - {
     "100 millis" in {
@@ -37,7 +39,6 @@ class TimingSpec extends AsyncFreeSpec with Matchers {
     }
 
     "100 millis failure" in {
-      case class Expected() extends Throwable
       val fa: Future[Int] = Future.failed(Expected())
       val f = recoverToExceptionIf[Expected](Futil.delay(100.millis)(fa))
       Futil.timed(f).flatMap {
@@ -78,7 +79,17 @@ class TimingSpec extends AsyncFreeSpec with Matchers {
       Futil.timed(f).flatMap {
         case (exception, duration) =>
           exception.getClass shouldEqual classOf[TimeoutException]
-          duration.toMillis shouldBe 100L +- 50L
+          duration.toMillis shouldBe 100L +- 25L
+      }
+    }
+
+    "failure exceeds deadline" in {
+      val fa: Future[Int] = Futil.delay(200.millis)(Future.failed(Expected()))
+      val f = recoverToExceptionIf[TimeoutException](Futil.deadline(100.millis)(fa))
+      Futil.timed(f).flatMap {
+        case (exception, duration) =>
+          exception.getClass shouldEqual classOf[TimeoutException]
+          duration.toMillis shouldBe 100L +- 25L
       }
     }
 

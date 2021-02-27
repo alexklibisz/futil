@@ -1,17 +1,19 @@
 package futil
 
-import org.scalatest.Succeeded
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
 
 import java.util.concurrent.atomic.AtomicInteger
 import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration._
 import scala.util._
 
 class ParallelismSpec extends AsyncFreeSpec with Matchers {
 
   override implicit val executionContext: ExecutionContext =
     ExecutionContext.global
+
+  import Futil.Implicits.timer
 
   "mapParN" - {
 
@@ -68,8 +70,20 @@ class ParallelismSpec extends AsyncFreeSpec with Matchers {
       val f = (a: Int) => Future(Thread.sleep(a))
 
       Futil.timed(Futil.mapParN(n)(as)(f)).map {
-        case (_, dur) =>
-          dur.toMillis shouldBe 1000L +- 50
+        case (_, dur) => dur.toMillis shouldBe 1000L +- 50
+      }
+    }
+
+    "delays are pipelined" in {
+
+      // The first 9 tasks each runs for 1000ms the remaining 100 run for 10ms each. 1 second total.
+      // ((9 * 1000ms) + (100 * 10ms)) / 10 = 1000ms
+      val as = (1 to 9).map(_ => 1000) ++ (1 to 100).map(_ => 10)
+      val n = 10
+      val f = (a: Int) => Futil.delay(a.millis)(Future.successful(()))
+
+      Futil.timed(Futil.mapParN(n)(as)(f)).map {
+        case (_, dur) => dur.toMillis shouldBe 1000L +- 50
       }
     }
 

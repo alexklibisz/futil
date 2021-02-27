@@ -13,7 +13,7 @@ import scala.util.{Failure, Success, Try}
 
 class RetrySpec extends AsyncFreeSpec with Matchers with Inspectors {
 
-  private final case class Expected() extends Throwable
+  case class Expected() extends Throwable
 
   "repeat" - {
 

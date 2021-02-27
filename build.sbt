@@ -1,6 +1,6 @@
 name := "futil"
 
-description := "Zero-dependency utilities for Scala Futures"
+description := "Utilities to get more from Scala Futures"
 
 organization := "com.alexklibisz"
 

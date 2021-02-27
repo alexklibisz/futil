@@ -6,6 +6,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future, Promise, TimeoutException}
 import scala.util.Try
 
+/** Utilities to get more from Scala Futures. */
 object Futil {
 
   object Implicits {

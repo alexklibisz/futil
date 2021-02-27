@@ -89,13 +89,13 @@ object Futil {
     fa().transformWith { t =>
       policy match {
         case p @ RetryPolicy.Repeat(n, d) =>
-          if (n > 0) d(t).flatMap(b => if (b) Future.fromTry(t) else retry(p.copy(n - 1))(fa))
+          if (n > 0) d(t).flatMap(if (_) Future.fromTry(t) else retry(p.copy(n - 1))(fa))
           else Future.fromTry(t)
         case p @ RetryPolicy.FixedBackoff(n, w, d) =>
-          if (n > 0) d(t).flatMap(b => if (b) Future.fromTry(t) else delay(w)(retry(p.copy(n - 1))(fa)))
+          if (n > 0) d(t).flatMap(if (_) Future.fromTry(t) else delay(w)(retry(p.copy(n - 1))(fa)))
           else Future.fromTry(t)
         case p @ RetryPolicy.ExponentialBackoff(n, w, d) =>
-          if (n > 0) d(t).flatMap(b => if (b) Future.fromTry(t) else delay(w)(retry(p.copy(n - 1, w * 2))(fa)))
+          if (n > 0) d(t).flatMap(if (_) Future.fromTry(t) else delay(w)(retry(p.copy(n - 1, w * 2))(fa)))
           else Future.fromTry(t)
       }
     }

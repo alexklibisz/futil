@@ -13,8 +13,7 @@ object Futil {
   }
 
   /**
-    * Time the execution of the given Future with nanosecond precision.
-    * The duration is only returned if the Future succeeds.
+    * Time the execution of the `fa` Future with nanosecond precision.
     */
   final def timed[A](fa: => Future[A])(implicit ec: ExecutionContext): Future[(A, Duration)] = {
     val t0 = System.nanoTime()
@@ -22,8 +21,7 @@ object Futil {
   }
 
   /**
-    * Run the given Future after delaying for the given Duration.
-    * If the Future is already running, then this will simply delay the return of the Future.
+    * Run the `fa` Future after delaying for `duration`.
     */
   final def delay[A](duration: Duration)(fa: => Future[A])(implicit ec: ExecutionContext, timer: Timer): Future[A] = {
     val p = Promise[A]()
@@ -35,8 +33,7 @@ object Futil {
   }
 
   /**
-    * Run the given Future for at most the given Duration.
-    * If it takes longer than the given direction, return a Future.failed containing a TimeoutException.
+    * If the `fa` future takes more than the given `duration` to complete, return a failed Future with a TimeoutException.
     */
   final def deadline[A](duration: Duration)(fa: => Future[A])(implicit ec: ExecutionContext, timer: Timer): Future[A] = {
     val ex = new TimeoutException(s"The given future did not complete within the given duration: $duration.")
@@ -45,8 +42,7 @@ object Futil {
   }
 
   /**
-    * Map over the elements of the given `IndexedSeq[A]` and apply the function `f` to start a `Future[B]`.
-    * Ensures that no more than `n` `Future[B]` are executing at any given time.
+    * Use the function `f` to convert each element in the `as` to a `Future[B]`, running at most `n` Futures at a time.
     * Lifts the result of the `Future[B]` into a `Future[Try[B]]` to prevent failing the `Future[Iterable[Try[B]]`.
     * Results are returned in the original order.
     */

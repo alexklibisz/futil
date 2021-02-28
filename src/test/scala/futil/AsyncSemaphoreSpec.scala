@@ -57,7 +57,7 @@ class AsyncSemaphoreSpec extends AsyncFreeSpec with Matchers {
       val check = Futil.timed(Future.sequence(waiting)).flatMap {
         case (_, dur) =>
           info(s"Completed ${as.length} tasks in ${dur.toMillis.millis}")
-          dur.toMillis shouldBe <(6000L)
+          dur.toMillis shouldBe <(9000L) // Would ideally be 5 seconds, but there's some overhead.
       }
 
       Futil.deadline(10.seconds)(check)

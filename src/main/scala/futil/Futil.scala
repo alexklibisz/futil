@@ -60,7 +60,7 @@ object Futil {
     mapParN(1)(as)(f)
 
   /**
-    * Use function f to map each elemnt in as to a Future[B], running at most n Futures per duration.
+    * Use function f to map each element in as to a Future[B], running at most n Futures per duration.
     * Lifts the result of the Future[B] into a Future[Try[B]\] to prevent failing the entire Iterable.
     */
   final def mapThrottled[A, B](n: Int, duration: Duration)(

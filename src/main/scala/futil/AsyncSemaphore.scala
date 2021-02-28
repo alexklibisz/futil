@@ -11,19 +11,21 @@ final class AsyncSemaphore private (permits: Int) extends Serializable {
   private var available = permits
   private val waiting = new util.ArrayDeque[Promise[Unit]]
 
-  def acquire(): Future[Unit] = waiting.synchronized {
-    if (available > 0) Future.successful(available -= 1)
-    else {
-      val p = Promise[Unit]()
-      waiting.addLast(p)
-      p.future
+  def acquire(): Future[Unit] =
+    waiting.synchronized {
+      if (available > 0) Future.successful(available -= 1)
+      else {
+        val p = Promise[Unit]()
+        waiting.addLast(p)
+        p.future
+      }
     }
-  }
 
-  def release(): Future[Unit] = waiting.synchronized {
-    if (waiting.isEmpty) Future.successful(if (available < permits) available += 1 else ())
-    else waiting.removeFirst().success(()).future
-  }
+  def release(): Future[Unit] =
+    waiting.synchronized {
+      if (waiting.isEmpty) Future.successful(if (available < permits) available += 1 else ())
+      else waiting.removeFirst().success(()).future
+    }
 
   def withPermit[A](f: () => Future[A])(implicit ec: ExecutionContext): Future[A] =
     for {

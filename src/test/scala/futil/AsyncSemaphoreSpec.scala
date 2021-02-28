@@ -54,13 +54,15 @@ class AsyncSemaphoreSpec extends AsyncFreeSpec with Matchers {
       val as = (0 to 999999).toVector
       val waiting = as.map(_ => keep(10000.nanos))
 
-      val check = Futil.timed(Future.sequence(waiting)).flatMap {
-        case (_, dur) =>
-          info(s"Completed ${as.length} tasks in ${dur.toMillis.millis}")
-          dur.toMillis shouldBe <(9000L) // Would ideally be 5 seconds, but there's some overhead.
+      for {
+        (_, dur) <- Futil.deadline(60.seconds)(Futil.timed(Future.sequence(waiting)))
+        (available, waiting) <- s.inspect()
+      } yield {
+        info(s"Completed ${as.length} tasks in ${dur.toSeconds.seconds}")
+        dur.toMillis shouldBe <(10000L) // Would ideally be 5 seconds, but there's some overhead to scheduling.
+        available shouldBe 2
+        waiting shouldBe 0
       }
-
-      Futil.deadline(10.seconds)(check)
     }
 
     "acquire/release has a risk of starvation if failures are not handled properly" in {

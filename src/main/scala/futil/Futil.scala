@@ -44,8 +44,8 @@ object Futil {
   }
 
   /**
-    * Use the function `f` to convert each element in the `as` to a `Future[B]`, running at most `n` Futures at a time.
-    * Lifts the result of the `Future[B]` into a `Future[Try[B]]` to prevent failing the `Future[Iterable[Try[B]]`.
+    * Use function f to map each element in as to a Future[B], running at most n Futures at a time.
+    * Lifts the result of the Future[B] into a Future[Try[B]\] to prevent failing the entire Iterable.
     * Results are returned in the original order.
     */
   final def mapParN[A, B](n: Int)(as: Iterable[A])(f: A => Future[B])(implicit ec: ExecutionContext): Future[Iterable[Try[B]]] = {
@@ -58,6 +58,17 @@ object Futil {
     */
   final def mapSerial[A, B](as: Iterable[A])(f: A => Future[B])(implicit ec: ExecutionContext): Future[Iterable[Try[B]]] =
     mapParN(1)(as)(f)
+
+  /**
+    * Use function f to map each elemnt in as to a Future[B], running at most n Futures per duration.
+    * Lifts the result of the Future[B] into a Future[Try[B]\] to prevent failing the entire Iterable.
+    */
+  final def mapThrottled[A, B](n: Int, duration: Duration)(
+      f: A => Future[B]
+  )(implicit ec: ExecutionContext, timer: Timer): Future[Iterable[Try[B]]] = {
+
+    ???
+  }
 
   /**
     * Retry the given Future according to the given [[RetryPolicy]].

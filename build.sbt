@@ -19,4 +19,6 @@ scalacOptions ++= Seq(
   "-Xlint:unused"
 )
 
+javaOptions in test ++= Seq("-Xms768m", "-Xmx768m")
+
 parallelExecution in test := false

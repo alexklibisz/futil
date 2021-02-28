@@ -1,6 +1,5 @@
 package futil
 
-import java.util.concurrent.atomic.{AtomicInteger, AtomicReferenceArray}
 import java.util.{Timer, TimerTask}
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future, Promise, TimeoutException}
@@ -12,6 +11,8 @@ object Futil {
   object Implicits {
     lazy implicit val timer: Timer = new Timer("futil-timer", true)
   }
+
+  final def thunk[A](fa: => Future[A]): () => Future[A] = () => fa
 
   /**
     * Time the execution of the `fa` Future with nanosecond precision.
@@ -47,40 +48,15 @@ object Futil {
     * Lifts the result of the `Future[B]` into a `Future[Try[B]]` to prevent failing the `Future[Iterable[Try[B]]`.
     * Results are returned in the original order.
     */
-  final def mapParN[A, B](n: Int)(as: IndexedSeq[A])(f: A => Future[B])(implicit ec: ExecutionContext): Future[IndexedSeq[Try[B]]] =
-    if (as.length <= n) Future.sequence(as.map(f(_).transformWith(Future.successful)))
-    else {
-      // Completion is signaled by completing a dummy promise.
-      val finished = Promise[Unit]()
-
-      // Bookkeeping maintained using java atomic utils.
-      val results = new AtomicReferenceArray[Try[B]](as.length)
-      val completed = new AtomicInteger(0)
-      val nextIndex = new AtomicInteger(n)
-
-      // Define the behavior for completing one future and starting the next.
-      def startNext(tb: Try[B], ixCompleted: Int): Unit = {
-        results.set(ixCompleted, tb)
-        if (completed.incrementAndGet() == as.length) finished.success(())
-        else {
-          val ixCurr = nextIndex.getAndIncrement()
-          if (ixCurr < as.length) f(as(ixCurr)).transformWith(Future.successful).foreach(startNext(_, ixCurr))
-        }
-      }
-
-      // Start the first `n` futures.
-      as.take(n).zipWithIndex.foreach {
-        case (a, i) => f(a).transformWith(Future.successful).foreach(startNext(_, i))
-      }
-
-      // Upon completion, grab all of the A's out of the atomic reference array and into an indexedseq.
-      finished.future.map(_ => as.indices.map(results.get))
-    }
+  final def mapParN[A, B](n: Int)(as: Iterable[A])(f: A => Future[B])(implicit ec: ExecutionContext): Future[Iterable[Try[B]]] = {
+    val sem = AsyncSemaphore(n)
+    Future.sequence(as.map(a => sem.withPermit(thunk(f(a).transformWith(Future.successful)))))
+  }
 
   /**
     * Alias for [[mapParN]] with n = 1.
     */
-  final def mapSerial[A, B](as: IndexedSeq[A])(f: A => Future[B])(implicit ec: ExecutionContext): Future[IndexedSeq[Try[B]]] =
+  final def mapSerial[A, B](as: Iterable[A])(f: A => Future[B])(implicit ec: ExecutionContext): Future[Iterable[Try[B]]] =
     mapParN(1)(as)(f)
 
   /**

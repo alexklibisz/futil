@@ -34,4 +34,4 @@ jobs:
       - name: test-compile
         run: sbt -batch test:compile
       - name: test
-        run: sbt -batch test
+        run: sbt -batch "testOnly futil.AsyncSemaphoreSpec"

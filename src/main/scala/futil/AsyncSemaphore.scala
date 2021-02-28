@@ -13,6 +13,7 @@ final class AsyncSemaphore private (permits: Int) extends Serializable {
 
   def acquire(): Future[Unit] =
     waiting.synchronized {
+      println(s"Acquiring with ${available} available permits and ${waiting.size()} requested permits")
       if (available > 0) Future.successful(available -= 1)
       else {
         val p = Promise[Unit]()
@@ -23,6 +24,7 @@ final class AsyncSemaphore private (permits: Int) extends Serializable {
 
   def release(): Future[Unit] =
     waiting.synchronized {
+      println(s"Releasing with ${available} available permits and ${waiting.size()} requested permits")
       if (waiting.isEmpty) Future.successful(if (available < permits) available += 1 else ())
       else waiting.removeFirst().success(()).future
     }

@@ -20,5 +20,5 @@ scalacOptions ++= Seq(
 )
 
 javaOptions in test ++= Seq("-Xms768m", "-Xmx768m")
-
+fork in test := true
 parallelExecution in test := false

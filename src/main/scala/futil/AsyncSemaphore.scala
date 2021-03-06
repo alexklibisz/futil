@@ -8,11 +8,15 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
   */
 final class AsyncSemaphore private (permits: Int) extends Serializable {
 
+  // Have to keep a Future[Unit] in the state to work with atomic updateAndGet.
   private case class State(available: Int, waiting: Vector[Promise[Unit]], dummy: Future[Unit])
 
   private val funit = Future.successful(())
   private val state = new AtomicReference[State](State(permits, Vector.empty[Promise[Unit]], funit))
 
+  /**
+    * Returns a Future which will complete when a permit becomes available.
+    */
   def acquire(): Future[Unit] = {
     val s_ = state.updateAndGet { s =>
       if (s.available > 0) s.copy(s.available - 1, dummy = funit)
@@ -24,13 +28,15 @@ final class AsyncSemaphore private (permits: Int) extends Serializable {
     s_.dummy
   }
 
+  /**
+    * Returns a Future which completes immediately and releases another waiting future
+    */
   def release(): Future[Unit] = {
     val s_ = state.updateAndGet { s =>
-      val available = if (s.available < permits) s.available + 1 else permits
-      if (s.waiting.isEmpty) s.copy(available, dummy = funit)
+      if (s.waiting.isEmpty) s.copy(if (s.available < permits) s.available + 1 else permits, dummy = funit)
       else {
-        s.waiting.head.trySuccess(()) // Because the update can run multiple times.
-        State(available, s.waiting.tail, funit)
+        s.waiting.head.trySuccess(()) // Need try because the update method can potentially be called multiple times.
+        s.copy(waiting = s.waiting.tail, dummy = funit)
       }
     }
     s_.dummy

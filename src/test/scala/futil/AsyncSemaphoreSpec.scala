@@ -38,7 +38,8 @@ class AsyncSemaphoreSpec extends AsyncFreeSpec with Matchers {
       for {
         _ <- s.release()
         _ <- s.release()
-      } yield Succeeded
+        (a, w) <- s.inspect()
+      } yield (a, w) shouldBe (2, 0)
     }
 
     "1 million async-bound Futures" in {
@@ -56,12 +57,11 @@ class AsyncSemaphoreSpec extends AsyncFreeSpec with Matchers {
 
       for {
         (_, dur) <- Futil.deadline(60.seconds)(Futil.timed(Future.sequence(waiting)))
-        (available, waiting) <- s.inspect()
+        (a, w) <- s.inspect()
       } yield {
         info(s"Completed ${as.length} tasks in ${dur.toSeconds.seconds}")
         dur.toMillis shouldBe <(10000L) // Would ideally be 5 seconds, but there's some overhead to scheduling.
-        available shouldBe 2
-        waiting shouldBe 0
+        (a, w) shouldBe (2, 0)
       }
     }
 

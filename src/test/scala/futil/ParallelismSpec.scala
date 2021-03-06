@@ -60,7 +60,7 @@ class ParallelismSpec extends AsyncFreeSpec with Matchers {
         } yield i
 
       Futil.mapParN(n)(as)(f).flatMap { bs =>
-        bs.filter(_.isFailure) shouldBe 'empty
+        bs.filter(_.isFailure) shouldBe Seq.empty
       }
     }
 
@@ -131,7 +131,7 @@ class ParallelismSpec extends AsyncFreeSpec with Matchers {
         } yield i
 
       Futil.mapSerial(as)(f).flatMap { bs =>
-        bs.filter(_.isFailure) shouldBe 'empty
+        bs.filter(_.isFailure) shouldBe Seq.empty
       }
     }
 

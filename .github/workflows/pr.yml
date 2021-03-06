@@ -28,26 +28,32 @@ jobs:
 
   docs:
     runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        scala: ["2.12.12", "2.13.5"]
     steps:
       - uses: actions/checkout@v2
       - uses: olafurpg/setup-scala@v10
         with:
           java-version: 14
       - name: scalafmt
-        run: sbt -batch doc
+        run: sbt -batch "++ ${{ matrix.scala }} doc"
 
   tests:
     runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        scala: [ "2.12.12", "2.13.5" ]
     steps:
       - uses: actions/checkout@v2
       - uses: olafurpg/setup-scala@v10
         with:
           java-version: 14
       - name: update
-        run: sbt -batch update
+        run: sbt -batch "++ ${{ matrix.scala }} update"
       - name: compile
-        run: sbt -batch compile
+        run: sbt -batch "++ ${{ matrix.scala }} compile"
       - name: test-compile
-        run: sbt -batch test:compile
+        run: sbt -batch "++ ${{ matrix.scala }} test:compile"
       - name: test
-        run: sbt -batch coverage test
+        run: sbt -batch coverage "++ ${{ matrix.scala }} test"

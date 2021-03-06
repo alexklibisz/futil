@@ -60,7 +60,7 @@ class AsyncSemaphoreSpec extends AsyncFreeSpec with Matchers {
         (a, w) <- s.inspect()
       } yield {
         info(s"Completed ${as.length} tasks in ${dur.toSeconds.seconds}")
-        dur.toMillis shouldBe <(10000L) // Would ideally be 5 seconds, but there's some overhead to scheduling.
+        dur.toSeconds shouldBe <(20L) // TODO: this takes 2 seconds locally and 15 in GH actions.
         (a, w) shouldBe (2, 0)
       }
     }

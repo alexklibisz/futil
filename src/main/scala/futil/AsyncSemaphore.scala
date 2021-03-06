@@ -2,11 +2,12 @@ package futil
 
 import java.util.concurrent.atomic.AtomicReference
 import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.util.control.NonFatal
 
 /**
   * Semaphore that asynchronously grants a fixed number of permits.
   */
-final class AsyncSemaphore private (permits: Int) extends Serializable {
+private[futil] final class AsyncSemaphore private (permits: Int) extends Serializable {
 
   // Have to keep a Future[Unit] in the state to work with atomic updateAndGet.
   private case class State(available: Int, waiting: Vector[Promise[Unit]], dummy: Future[Unit])
@@ -42,12 +43,16 @@ final class AsyncSemaphore private (permits: Int) extends Serializable {
     s_.dummy
   }
 
+  /**
+    * Execute the given Future _after_ acquiring a permit and then release the permit, even if the Future failed.
+    */
   def withPermit[A](f: () => Future[A])(implicit ec: ExecutionContext): Future[A] =
     for {
       _ <- acquire()
-      ta <- f().transformWith(Future.successful) // Lift to Future[Try[A]] to avoid short-circuiting on failure.
+      a <- f().recoverWith {
+        case NonFatal(e) => release().flatMap(_ => Future.failed(e))
+      }
       _ <- release()
-      a <- Future.fromTry(ta) // Drop back to a Future[A].
     } yield a
 
   private[futil] def inspect(): Future[(Int, Int)] = {
@@ -57,7 +62,7 @@ final class AsyncSemaphore private (permits: Int) extends Serializable {
 
 }
 
-object AsyncSemaphore {
+private[futil] object AsyncSemaphore {
   def apply(permits: Int): AsyncSemaphore = {
     require(permits > 0, "AsyncSemaphore must have at least 1 permit")
     new AsyncSemaphore(permits)

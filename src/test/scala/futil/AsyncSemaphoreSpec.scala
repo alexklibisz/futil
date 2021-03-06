@@ -83,7 +83,7 @@ class AsyncSemaphoreSpec extends AsyncFreeSpec with Matchers {
       val s = AsyncSemaphore(2)
       val check = for {
         _ <- s.acquire()
-        _ = s.withPermit(Futil.thunk(Futil.delay(100.millis)(Future.failed(new Exception))))
+        _ = s.withPermit(() => Futil.delay(100.millis)(Future.failed(new Exception)))
         _ <- s.acquire()
       } yield Succeeded
       Futil.deadline(200.millis)(check)

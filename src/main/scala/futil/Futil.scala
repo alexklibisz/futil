@@ -12,8 +12,6 @@ object Futil {
     lazy implicit val timer: Timer = new Timer("futil-timer", true)
   }
 
-  final def thunk[A](fa: => Future[A]): () => Future[A] = () => fa
-
   /**
     * Time the execution of the `fa` Future with nanosecond precision.
     */
@@ -50,7 +48,7 @@ object Futil {
     */
   final def mapParN[A, B](n: Int)(as: Seq[A])(f: A => Future[B])(implicit ec: ExecutionContext): Future[Seq[Try[B]]] = {
     val sem = AsyncSemaphore(n)
-    Future.sequence(as.map(a => sem.withPermit(thunk(f(a).transformWith(Future.successful)))))
+    Future.sequence(as.map(a => sem.withPermit(() => f(a).transformWith(Future.successful))))
   }
 
   /**

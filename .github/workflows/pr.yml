@@ -56,4 +56,4 @@ jobs:
       - name: test-compile
         run: sbt -batch "++ ${{ matrix.scala }} test:compile"
       - name: test
-        run: sbt -batch "++ ${{ matrix.scala }} coverage test"
+        run: sbt -batch coverage "++ ${{ matrix.scala }} test"

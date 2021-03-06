@@ -14,15 +14,20 @@ class AsyncSemaphoreSpec extends AsyncFreeSpec with Matchers {
 
   "AsyncSemaphore" - {
 
+    "at least 1 permit" in {
+      val ex = intercept[IllegalArgumentException](Futil.semaphore(0))
+      Future(ex.getMessage shouldBe "requirement failed: semaphore must have at least 1 permit")
+    }
+
     "acquire immediately when permits are available" in {
-      val s = AsyncSemaphore(1)
+      val s = Futil.semaphore(1)
       Futil.timed(s.acquire()).map {
         case (_, dur) => dur.toMillis shouldBe <(50L)
       }
     }
 
     "prevent acquiring when permits are exhausted" in {
-      val s = AsyncSemaphore(2)
+      val s = Futil.semaphore(2)
       val check = for {
         _ <- s.acquire()
         _ <- s.acquire()
@@ -34,7 +39,7 @@ class AsyncSemaphoreSpec extends AsyncFreeSpec with Matchers {
     }
 
     "releasing when no permits are acquired is a no-op" in {
-      val s = AsyncSemaphore(2)
+      val s = Futil.semaphore(2)
       for {
         _ <- s.release()
         _ <- s.release()
@@ -43,7 +48,7 @@ class AsyncSemaphoreSpec extends AsyncFreeSpec with Matchers {
     }
 
     "1 million async-bound Futures" in {
-      val s = AsyncSemaphore(2)
+      val s = Futil.semaphore(2)
 
       def keep(dur: Duration): Future[Unit] =
         for {
@@ -66,7 +71,7 @@ class AsyncSemaphoreSpec extends AsyncFreeSpec with Matchers {
     }
 
     "acquire/release has a risk of starvation if failures are not handled properly" in {
-      val s = AsyncSemaphore(2)
+      val s = Futil.semaphore(2)
       val check = for {
         _ <- s.acquire()
         _ <- s.acquire()
@@ -80,7 +85,7 @@ class AsyncSemaphoreSpec extends AsyncFreeSpec with Matchers {
     }
 
     "withPermit correctly handles failures" in {
-      val s = AsyncSemaphore(2)
+      val s = Futil.semaphore(2)
       val check = for {
         _ <- s.acquire()
         _ = s.withPermit(() => Futil.delay(100.millis)(Future.failed(new Exception)))

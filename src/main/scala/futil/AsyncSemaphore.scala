@@ -7,7 +7,7 @@ import scala.util.control.NonFatal
 /**
   * Semaphore that asynchronously grants a fixed number of permits.
   */
-private[futil] final class AsyncSemaphore private (permits: Int) extends Serializable {
+final class AsyncSemaphore private[futil] (permits: Int) extends Serializable {
 
   // Have to keep a Future[Unit] in the state to work with atomic updateAndGet.
   private case class State(available: Int, waiting: Vector[Promise[Unit]], last: Future[Unit])
@@ -58,11 +58,4 @@ private[futil] final class AsyncSemaphore private (permits: Int) extends Seriali
     Future.successful((s.available, s.waiting.length))
   }
 
-}
-
-private[futil] object AsyncSemaphore {
-  def apply(permits: Int): AsyncSemaphore = {
-    require(permits > 0, "AsyncSemaphore must have at least 1 permit")
-    new AsyncSemaphore(permits)
-  }
 }

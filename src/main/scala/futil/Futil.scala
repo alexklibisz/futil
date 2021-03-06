@@ -13,6 +13,14 @@ object Futil {
   }
 
   /**
+    * Construct an [[AsyncSemaphore]] with the specified number of permits.
+    */
+  final def semaphore(permits: Int): AsyncSemaphore = {
+    require(permits > 0, "semaphore must have at least 1 permit")
+    new AsyncSemaphore(permits)
+  }
+
+  /**
     * Time the execution of the `fa` Future with nanosecond precision.
     */
   final def timed[A](fa: => Future[A])(implicit ec: ExecutionContext): Future[(A, Duration)] = {
@@ -47,7 +55,7 @@ object Futil {
     * Results are returned in the original order.
     */
   final def mapParN[A, B](n: Int)(as: Seq[A])(f: A => Future[B])(implicit ec: ExecutionContext): Future[Seq[Try[B]]] = {
-    val sem = AsyncSemaphore(n)
+    val sem = semaphore(n)
     Future.sequence(as.map(a => sem.withPermit(() => f(a).transformWith(Future.successful))))
   }
 

@@ -45,19 +45,22 @@ class ParallelismSpec extends AsyncFreeSpec with Matchers {
 
     "execute no more than n at a time" in {
       val counter = new AtomicInteger(0)
-      val as = (1 to 1000).toVector
+      val as = (1 to 10000).toVector
       val n = 10
       val f = (i: Int) =>
-        Future {
-          val c = counter.getAndIncrement()
-          if (c > n) fail(s"$c > $n")
-          Thread.sleep(i % 30)
-          counter.decrementAndGet()
-          i
-        }
+        for {
+          _ <- Future {
+            val c = counter.getAndIncrement()
+            if (c > n) fail(s"$c > $n")
+          }
+          _ <- Futil.delay(1.millis)(Future.successful(()))
+          _ <- Future {
+            counter.decrementAndGet()
+          }
+        } yield i
 
       Futil.mapParN(n)(as)(f).flatMap { bs =>
-        bs shouldBe as.map(Success(_))
+        bs.filter(_.isFailure) shouldBe 'empty
       }
     }
 
@@ -74,21 +77,61 @@ class ParallelismSpec extends AsyncFreeSpec with Matchers {
       }
     }
 
-    "fibonacci numbers are parallelized" in {
+    def fib(n: Int): Int = if (n <= 1) n else fib(n - 1) + fib(n - 2)
 
-      // Check that computing fibonacci numbers is faster using mapParN with n = 4 than n = 1.
-
-      def fib(n: Int): Int = if (n <= 1) n else fib(n - 1) + fib(n - 2)
-
-      val as = (1 to 42).toVector
+    "fibonacci is faster with n = 2 than n = 1" in {
+      // Check that computing fibonacci numbers is faster using mapParN with n = 2 than n = 1.
+      val as = (1 to 500).map(_ % 42)
       val f = (i: Int) => Future(fib(i))
-
       for {
+        (res2, dur2) <- Futil.timed(Futil.mapParN(2)(as)(f))
         (res1, dur1) <- Futil.timed(Futil.mapParN(1)(as)(f))
-        (res4, dur4) <- Futil.timed(Futil.mapParN(4)(as)(f))
       } yield {
-        res1.toVector shouldBe res4.toVector
-        dur1.toMillis shouldBe >(dur4.toMillis)
+        res1.toVector shouldBe res2.toVector
+        dur1.toMillis shouldBe >(dur2.toMillis)
+      }
+    }
+
+    "1 million fibonaccis (many small cpu-bound tasks)" in {
+      def fib(n: Int): Int = if (n <= 1) n else fib(n - 1) + fib(n - 2)
+      val as = (0 to 999999).map(_ % 28)
+      val f = (i: Int) => Future(fib(i))
+      Futil.mapParN(2)(as)(f).flatMap(_.toVector.length shouldBe as.length)
+    }
+
+    "1 million delays (many small async tasks)" in {
+      val as = (0 to 999999).map(_ % 30000 + 10000)
+      val f = (t: Int) => Futil.delay(t.nanos)(Future.successful(()))
+      Futil.mapParN(2)(as)(f).flatMap(_.toVector.length shouldBe as.length)
+    }
+
+    "1 million mixed delays and fibonaccis" in {
+      val as = (0 to 999999)
+      val f = (i: Int) => if (i % 2 == 0) Future(fib(i % 28)) else Futil.delay((i % 30000 + 10000).nanos)(Future.successful(()))
+      Futil.mapParN(2)(as)(f).flatMap(_.toVector.length shouldBe as.length)
+    }
+
+  }
+
+  "mapSerial" - {
+
+    "executes serially" in {
+      val counter = new AtomicInteger(0)
+      val as = (1 to 10000).toVector
+      val f = (i: Int) =>
+        for {
+          _ <- Future {
+            val c = counter.getAndIncrement()
+            if (c > 1) fail(s"$c > 1")
+          }
+          _ <- Futil.delay(1.millis)(Future.successful(()))
+          _ <- Future {
+            counter.decrementAndGet()
+          }
+        } yield i
+
+      Futil.mapSerial(as)(f).flatMap { bs =>
+        bs.filter(_.isFailure) shouldBe 'empty
       }
     }
 

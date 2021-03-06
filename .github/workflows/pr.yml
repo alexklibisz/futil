@@ -16,7 +16,27 @@ jobs:
     steps:
       - run: echo $GITHUB_CONTEXT
 
-  sbt:
+  scalafmt:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: olafurpg/setup-scala@v10
+        with:
+          java-version: 14
+      - name: scalafmt
+        run: sbt -batch scalafmtCheckAll
+
+  docs:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: olafurpg/setup-scala@v10
+        with:
+          java-version: 14
+      - name: scalafmt
+        run: sbt -batch doc
+
+  tests:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -25,13 +45,9 @@ jobs:
           java-version: 14
       - name: update
         run: sbt -batch update
-      - name: scalafmt
-        run: sbt -batch scalafmtCheckAll
       - name: compile
         run: sbt -batch compile
-      - name: doc
-        run: sbt -batch doc
       - name: test-compile
         run: sbt -batch test:compile
       - name: test
-        run: sbt -batch test
+        run: sbt -batch coverage test

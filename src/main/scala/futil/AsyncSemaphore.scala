@@ -10,7 +10,7 @@ import scala.util.control.NonFatal
 private[futil] final class AsyncSemaphore private (permits: Int) extends Serializable {
 
   // Have to keep a Future[Unit] in the state to work with atomic updateAndGet.
-  private case class State(available: Int, waiting: Vector[Promise[Unit]], dummy: Future[Unit])
+  private case class State(available: Int, waiting: Vector[Promise[Unit]], last: Future[Unit])
 
   private val funit = Future.successful(())
   private val state = new AtomicReference[State](State(permits, Vector.empty[Promise[Unit]], funit))
@@ -20,13 +20,13 @@ private[futil] final class AsyncSemaphore private (permits: Int) extends Seriali
     */
   def acquire(): Future[Unit] = {
     val s_ = state.updateAndGet { s =>
-      if (s.available > 0) s.copy(s.available - 1, dummy = funit)
+      if (s.available > 0) s.copy(s.available - 1, last = funit)
       else {
         val p = Promise[Unit]()
-        s.copy(waiting = s.waiting :+ p, dummy = p.future)
+        s.copy(waiting = s.waiting :+ p, last = p.future)
       }
     }
-    s_.dummy
+    s_.last
   }
 
   /**
@@ -34,13 +34,11 @@ private[futil] final class AsyncSemaphore private (permits: Int) extends Seriali
     */
   def release(): Future[Unit] = {
     val s_ = state.updateAndGet { s =>
-      if (s.waiting.isEmpty) s.copy(if (s.available < permits) s.available + 1 else permits, dummy = funit)
-      else {
-        s.waiting.head.trySuccess(()) // Need try because the update method can potentially be called multiple times.
-        s.copy(waiting = s.waiting.tail, dummy = funit)
-      }
+      if (s.waiting.isEmpty) s.copy(if (s.available < permits) s.available + 1 else permits, last = funit)
+      else // Need try because the update method can potentially be called multiple times.
+        s.copy(waiting = s.waiting.tail, last = Future.successful(s.waiting.head.trySuccess(())))
     }
-    s_.dummy
+    s_.last
   }
 
   /**

@@ -113,4 +113,28 @@ class ParallelismSpec extends AsyncFreeSpec with Matchers {
 
   }
 
+  "mapSerial" - {
+
+    "executes serially" in {
+      val counter = new AtomicInteger(0)
+      val as = (1 to 10000).toVector
+      val f = (i: Int) =>
+        for {
+          _ <- Future {
+            val c = counter.getAndIncrement()
+            if (c > 1) fail(s"$c > 1")
+          }
+          _ <- Futil.delay(1.millis)(Future.successful(()))
+          _ <- Future {
+            counter.decrementAndGet()
+          }
+        } yield i
+
+      Futil.mapSerial(as)(f).flatMap { bs =>
+        bs.filter(_.isFailure) shouldBe 'empty
+      }
+    }
+
+  }
+
 }

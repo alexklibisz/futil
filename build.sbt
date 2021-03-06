@@ -19,6 +19,9 @@ scalacOptions ++= Seq(
   "-Xlint:unused"
 )
 
+coverageMinimum := 100
+coverageFailOnMinimum := true
+
 fork in Test := true
 javaOptions in Test ++= Seq("-Xms768m", "-Xmx768m")
 parallelExecution in Test := false

@@ -19,6 +19,6 @@ scalacOptions ++= Seq(
   "-Xlint:unused"
 )
 
-javaOptions in test ++= Seq("-Xms768m", "-Xmx768m")
-fork in test := true
-parallelExecution in test := false
+fork in Test := true
+javaOptions in Test ++= Seq("-Xms768m", "-Xmx768m")
+parallelExecution in Test := false

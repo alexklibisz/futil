@@ -45,10 +45,10 @@ object Futil {
 
   /**
     * Use function f to map each element in as to a Future[B], running at most n Futures at a time.
-    * Lifts the result of the Future[B] into a Future[Try[B]\] to prevent failing the entire Iterable.
+    * Lifts the result of the Future[B] into a Future[Try[B]\] to prevent failing the entire Seq.
     * Results are returned in the original order.
     */
-  final def mapParN[A, B](n: Int)(as: Iterable[A])(f: A => Future[B])(implicit ec: ExecutionContext): Future[Iterable[Try[B]]] = {
+  final def mapParN[A, B](n: Int)(as: Seq[A])(f: A => Future[B])(implicit ec: ExecutionContext): Future[Seq[Try[B]]] = {
     val sem = AsyncSemaphore(n)
     Future.sequence(as.map(a => sem.withPermit(thunk(f(a).transformWith(Future.successful)))))
   }
@@ -56,19 +56,8 @@ object Futil {
   /**
     * Alias for [[mapParN]] with n = 1.
     */
-  final def mapSerial[A, B](as: Iterable[A])(f: A => Future[B])(implicit ec: ExecutionContext): Future[Iterable[Try[B]]] =
+  final def mapSerial[A, B](as: Seq[A])(f: A => Future[B])(implicit ec: ExecutionContext): Future[Seq[Try[B]]] =
     mapParN(1)(as)(f)
-
-  /**
-    * Use function f to map each element in as to a Future[B], running at most n Futures per duration.
-    * Lifts the result of the Future[B] into a Future[Try[B]\] to prevent failing the entire Iterable.
-    */
-  final def mapThrottled[A, B](n: Int, duration: Duration)(
-      f: A => Future[B]
-  )(implicit ec: ExecutionContext, timer: Timer): Future[Iterable[Try[B]]] = {
-
-    ???
-  }
 
   /**
     * Retry the given Future according to the given [[RetryPolicy]].

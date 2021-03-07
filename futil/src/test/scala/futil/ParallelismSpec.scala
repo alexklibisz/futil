@@ -10,7 +10,7 @@ import scala.util._
 
 class ParallelismSpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers {
 
-  import Futil.Implicits.timer
+  import Futil.Implicits.scheduler
 
   "traverseParN" - {
 

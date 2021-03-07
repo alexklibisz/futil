@@ -10,7 +10,7 @@ import org.scalatest.Succeeded
 class AsyncSemaphoreSpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers {
 
   import Futil._
-  import Futil.Implicits.timer
+  import Futil.Implicits.scheduler
 
   "AsyncSemaphore" - {
 
@@ -48,25 +48,28 @@ class AsyncSemaphoreSpec extends AsyncFreeSpec with GlobalExecutionContext with 
     }
 
     "1 million async-bound Futures" in {
-      val s = semaphore(2)
+
+      // 1M * 1 ms / 32 = 1000 seconds / 32 = 31.25 seconds.
+
+      val s = semaphore(32)
 
       def keep(dur: Duration): Future[Unit] =
         for {
           _ <- s.acquire()
-          _ <- delay(dur)(Future.successful(()))
+          _ <- sleep(dur)
           _ <- s.release()
         } yield ()
 
       val as = (0 to 999999).toVector
-      val waiting = as.map(_ => keep(10000.nanos))
+      val waiting = as.map(_ => keep(1.millis))
 
       for {
         (_, dur) <- deadline(60.seconds)(timed(Future.sequence(waiting)))
         (a, w) <- s.inspect()
       } yield {
         info(s"Completed ${as.length} tasks in ${dur.toSeconds.seconds}")
-        dur.toSeconds shouldBe <(20L) // TODO: this takes 2 seconds locally and 15 in GH actions.
-        (a, w) shouldBe (2, 0)
+        dur.toSeconds shouldBe <(45L)
+        (a, w) shouldBe (32, 0)
       }
     }
 

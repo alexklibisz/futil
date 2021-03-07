@@ -9,7 +9,7 @@ Effect systems and IO Monads like those provided by [cats-effect](https://typele
 for concurrent and asynchronous programming, but they can be difficult to introduce in an established codebase.
 
 If you're starting a green-field project then you should totally learn and use a real effect system.
-If you just need to limit the parallelism of some Futures or implement a simple Retry, you might give this one a try.
+If you just need to limit the parallelism of some Futures or implement a simple Retry, you might give futil a try.
 
 ## API
 
@@ -21,11 +21,14 @@ import scala.concurrent._
 import duration._
 import scala.util._
 
+// Futil imports.
+import futil._
+
+// Most methods require an implicit ExecutionContext.
 import ExecutionContext.Implicits.global
 
-// Futil imports. Some methods require an implicit java.util.Timer. We can provide our own or use this one.
-import futil._
-import Futil.Implicits.timer
+// Some methods require an implicit ScheduledExecutorService.
+import Futil.Implicits.scheduler
 
 // Let's pretend this is calling some external web service that does something useful. 
 def callService(i: Int): Future[Int] = Future(i + 1)
@@ -61,6 +64,9 @@ it will still execute eagerly and silently defeat the purpose of the whole exerc
 
 ### Timing
 
+Note that nanosecond precision is technically supported, but the overhead of scheduling, executing, etc.
+usually negates that level of precision.
+
 Time the execution of a Future.
 
 ```scala mdoc
@@ -80,6 +86,13 @@ Delay the execution of a Future.
 ```scala mdoc
 // Waits the given duration before executing the Future.
 val delayed: Future[Int] = Futil.delay(1.seconds)(callService(42))
+```
+
+Sleep asynchronously.
+
+```scala mdoc
+// Sleeps the given duration before continuing.
+val slept: Future[Unit] = Futil.sleep(1.seconds)
 ```
 
 ### Parallelism

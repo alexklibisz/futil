@@ -8,7 +8,7 @@ import scala.concurrent.{Future, TimeoutException}
 
 class TimingSpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers {
 
-  import Futil.Implicits.timer
+  import Futil.Implicits.scheduler
 
   case class Expected() extends Throwable
 
@@ -21,6 +21,16 @@ class TimingSpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers
           val dur = (System.nanoTime() - t0).nanos
           i shouldBe 99
           duration.toMillis shouldBe dur.toMillis +- 50L
+      }
+    }
+  }
+
+  "sleep" - {
+    "100 millis" in {
+      Futil.timed(Futil.sleep(100.millis)).map {
+        case (_, dur) =>
+          dur.toMillis shouldBe >=(100L)
+          dur.toMillis shouldBe <=(150L)
       }
     }
   }

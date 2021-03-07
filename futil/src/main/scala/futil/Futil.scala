@@ -1,6 +1,6 @@
 package futil
 
-import java.util.{Timer, TimerTask}
+import java.util.concurrent.{Callable, ScheduledExecutorService, ScheduledThreadPoolExecutor}
 import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.Try
@@ -9,7 +9,7 @@ import scala.util.Try
 object Futil {
 
   object Implicits {
-    lazy implicit val timer: Timer = new Timer("futil-timer", true)
+    lazy implicit val scheduler: ScheduledExecutorService = new ScheduledThreadPoolExecutor(1)
   }
 
   /**
@@ -30,7 +30,7 @@ object Futil {
     */
   final def deadline[A](
       duration: Duration
-  )(fa: => Future[A])(implicit ec: ExecutionContext, timer: Timer): Future[A] = {
+  )(fa: => Future[A])(implicit ec: ExecutionContext, scheduler: ScheduledExecutorService): Future[A] = {
     val ex = new TimeoutException(s"The given future did not complete within the given duration: $duration.")
     val other = delay(duration)(Future.failed(ex))
     Future.firstCompletedOf(Seq(fa, other))
@@ -39,14 +39,22 @@ object Futil {
   /**
     * Run the Future after delaying for the given Duration.
     */
-  final def delay[A](duration: Duration)(fa: => Future[A])(implicit ec: ExecutionContext, timer: Timer): Future[A] = {
+  final def delay[A](duration: Duration)(fa: => Future[A])(implicit ec: ExecutionContext,
+                                                           scheduler: ScheduledExecutorService): Future[A] = {
     val p = Promise[A]()
-    val t = new TimerTask {
-      override def run(): Unit = fa.onComplete(p.complete)
+    val t = new Callable[Unit] {
+      override def call(): Unit = fa.onComplete(p.complete)
     }
-    timer.schedule(t, duration.toMillis)
+    scheduler.schedule(t, duration._1, duration._2)
     p.future
   }
+
+  /**
+    * Asynchronously sleep for the given duration.
+    */
+  final def sleep(duration: Duration)(implicit ec: ExecutionContext,
+                                      scheduler: ScheduledExecutorService): Future[Unit] =
+    delay(duration)(Future.successful(()))
 
   /**
     * Use function f to map each element in as to a Future[B], running at most n Futures at a time.
@@ -71,7 +79,7 @@ object Futil {
     */
   final def retry[A](
       policy: RetryPolicy[A]
-  )(fa: () => Future[A])(implicit ec: ExecutionContext, timer: Timer): Future[A] =
+  )(fa: () => Future[A])(implicit ec: ExecutionContext, scheduler: ScheduledExecutorService): Future[A] =
     fa().transformWith { t =>
       policy match {
         case p @ RetryPolicy.Repeat(n, d) =>

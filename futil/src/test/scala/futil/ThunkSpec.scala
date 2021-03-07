@@ -9,7 +9,7 @@ import scala.concurrent.duration._
 
 class ThunkSpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers {
 
-  import Futil.Implicits.timer
+  import Futil.Implicits.scheduler
 
   "Thunk" - {
 

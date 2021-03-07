@@ -23,3 +23,22 @@ lazy val futil = project.in(file("."))
     javaOptions in Test ++= Seq("-Xms768m", "-Xmx768m"),
     parallelExecution in Test := false
   )
+
+lazy val docs = project.in(file("docs"))
+  .enablePlugins(MicrositesPlugin)
+  .settings(
+    publishArtifact := false,
+    micrositeName := "futil",
+    micrositeAuthor := "Alex Klibisz",
+    micrositeDescription := "Minimal utilities for Scala Futures",
+    micrositeBaseUrl := "/futil",
+    micrositeDocumentationUrl := "/futil/docs",
+    micrositeHomepage := "https://github.com/alexklibisz/futil",
+    micrositeGithubOwner := "alexklibisz",
+    micrositeGithubRepo := "futil",
+    micrositeTheme := "pattern",
+    micrositePushSiteWith := GitHub4s,
+    micrositeSearchEnabled := false,
+    micrositeFooterText := Some(""),
+    mdocIn := (sourceDirectory in Compile).value / "mdoc"
+  )

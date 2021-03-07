@@ -4,7 +4,9 @@ Zero-dependency utilities for Scala Futures.
 
 ## Purpose
 
-Scala's built-in Futures are a good abstraction for concurrent and asynchronous programming, but they have some quirks. 
+Scala's built-in [Futures](https://docs.scala-lang.org/overviews/core/futures.html) are a good abstraction for concurrent 
+and asynchronous programming, but they have some quirks.[^1]
+
 Effect systems and IO Monads like those provided by cats-effect, ZIO, monix, akka, etc. add many useful features
 for concurrent and asynchronous programming, but they can be difficult to introduce in an established codebase.
 This library aims to add some mileage to Scala's Futures without introducing a totally new effect system.
@@ -35,7 +37,7 @@ def callService(i: Int): Future[Int] = Future(i + 1)
 Scala Futures execute _eagerly_. This means when we define a `val foo: Future[Int] = ...`, it starts running _now_.
 
 To account for this, some methods in `Futil` use a [_thunk_](https://en.wikipedia.org/wiki/Thunk). 
-This is just a fancy word for a function from `Unit` to some return type.
+This is just a fancy word for a function that takes `Unit` and returns something.
 
 For example, a thunk for a `Future[Int]`:
 
@@ -140,3 +142,10 @@ Futil.retry(RetryPolicy.ExponentialBackoff(3, 2.seconds))(() => callService(42))
 // Early stop if asked nicely.
 Futil.retry(RetryPolicy.ExponentialBackoff(3, 2.seconds, earlyStop))(() => callService(42))
 ```
+
+### Asynchronous Semaphore
+
+---
+
+[^1]: [Reddit: Why is Future totally unusable](https://www.reddit.com/r/scala/comments/3zofjl/why_is_future_totally_unusable/),
+  [John de Goes: Upgrade your Future](https://www.youtube.com/watch?v=USgfku1h7Hw)

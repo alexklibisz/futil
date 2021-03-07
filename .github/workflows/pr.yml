@@ -37,9 +37,9 @@ jobs:
         with:
           java-version: 14
       - name: doc
-        run: sbt -batch "++ ${{ matrix.scala }} doc"
+        run: sbt -batch "++ ${{ matrix.scala }} futil/doc"
       - name: mdoc
-        run: sbt -batch "++ ${{ matrix.scala }} mdoc"
+        run: sbt -batch "++ ${{ matrix.scala }} docs/mdoc"
 
   tests:
     runs-on: ubuntu-20.04

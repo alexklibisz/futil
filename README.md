@@ -16,19 +16,18 @@ If you just need to limit the parallelism of some Futures or implement a simple 
 ### Setup
 
 ```scala mdoc
-// Typical Scala goodies.
+// Typical async stuff.
 import scala.concurrent._
 import duration._
 import scala.util._
 
-// Generally not a good idea to use this, but good enough for a readme.
 import ExecutionContext.Implicits.global
 
-// Futil imports. Some methods require an implicit java.util.Timer.
+// Futil imports. Some methods require an implicit java.util.Timer. We can provide our own or use this one.
 import futil._
 import Futil.Implicits.timer
 
-// Let's pretend this is calling some external web service. 
+// Let's pretend this is calling some external web service that does something useful. 
 def callService(i: Int): Future[Int] = Future(i + 1)
 ```
 
@@ -37,7 +36,7 @@ def callService(i: Int): Future[Int] = Future(i + 1)
 Scala Futures execute _eagerly_. This means when we define a `val foo: Future[Int] = ...`, it starts running _now_.
 
 To account for this, some methods in `Futil` use a [_thunk_](https://en.wikipedia.org/wiki/Thunk). 
-This is just a fancy word for a function that takes `Unit` and returns something.
+Thunk is just a fancy word for a function that takes `Unit` and returns something.
 
 For example, a thunk for a `Future[Int]`:
 
@@ -57,7 +56,7 @@ A thunk of a Future is useful in two cases:
 1. When we need to delay the execution of a Future.
 2. When we need a way to re-run the Future on-demand.
 
-Thunks are not fool-proof. For instance, if you define the Future as a `val`, and _then_ wrap it in a thunk, 
+Thunks are not fool-proof. For instance, if we define the Future as a `val`, and _then_ wrap it in a thunk, 
 it will still execute eagerly and silently defeat the purpose of the whole exercise.
 
 ### Timing
@@ -93,7 +92,7 @@ val numInParallel = 16
 val inputs: Seq[Int] = 0 to 9999
 def f(i: Int): Future[Double] = callService(i).map(_ * 3.14)
 
-// Return a Seq[Try[...]], since some of the calls might have failed. 
+// Returns a Seq[Try[...]], indicating that some of the calls might have failed. 
 val outputs: Future[Seq[Try[Double]]] = Futil.mapParN(numInParallel)(inputs)(f)
 ```
 
@@ -115,7 +114,7 @@ Futil.retry(RetryPolicy.Repeat(3))(() => callService(42))
 Retry a fixed number of times, or stop early based on the result of the previous call.
 
 ```scala mdoc
-// Early stop if the last call returned a throwable containign the word "please".
+// Early stop if the last call returned a throwable containing the word "please".
 def earlyStop(t: Try[Int]): Future[Boolean] = t match {
   case Failure(t) => Future.successful(t.getMessage.contains("please"))
   case _          => Future.successful(false)
@@ -145,7 +144,8 @@ Futil.retry(RetryPolicy.ExponentialBackoff(3, 2.seconds, earlyStop))(() => callS
 
 ### Asynchronous Semaphore (Advanced)
 
-A semaphore lets us acquire and release a fixed number of permits to limit access to some resource.
+A [semaphore](https://en.wikipedia.org/wiki/Semaphore_(programming)) lets us acquire and release a fixed number of 
+permits in order to limit access to some resource.
 An asynchronous semaphore lets us acquire and release asynchronously.
 
 Acquire and release permits:
@@ -159,7 +159,7 @@ for {
 } yield ()
 ```
 
-Be careful: if your method fails, the release method must still be called:
+Be careful: if the method fails, the release method must still be called:
 
 ```scala mdoc
 for {

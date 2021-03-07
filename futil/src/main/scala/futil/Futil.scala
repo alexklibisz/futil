@@ -53,8 +53,9 @@ object Futil {
     * Lifts the result of the Future[B] into a Future[Try[B]\] to prevent failing the entire Seq.
     * Results are returned in the original order.
     */
-  final def traverseParN[A, B](n: Int)(as: Seq[A])(f: A => Future[B])(
-      implicit ec: ExecutionContext): Future[Seq[Try[B]]] = {
+  final def traverseParN[A, B](
+      n: Int
+  )(as: Seq[A])(f: A => Future[B])(implicit ec: ExecutionContext): Future[Seq[Try[B]]] = {
     val sem = semaphore(n)
     Future.sequence(as.map(a => sem.withPermit(thunk(f(a).transformWith(Future.successful)))))
   }

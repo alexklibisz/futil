@@ -1,16 +1,15 @@
 # futil
 
-Zero-dependency utilities for Scala Futures.
-
-## Purpose
+This library aims to add some useful functionality to Scala's Futures without introducing a full effect system.
 
 Scala's built-in [Futures](https://docs.scala-lang.org/overviews/core/futures.html) are a pretty good abstraction for 
 concurrent and asynchronous programming, but they have some quirks (e.g., lack of referential transparency).
-
-Effect systems and IO Monads like those provided by cats-effect, ZIO, monix, akka, etc. have many useful features
+Effect systems and IO Monads like those provided by [cats-effect](https://typelevel.org/cats-effect/), 
+[ZIO](https://zio.dev/), [monix](https://monix.io/), [akka](https://akka.io/), etc. have many useful features
 for concurrent and asynchronous programming, but they can be difficult to introduce in an established codebase.
 
-This library aims to add some mileage to Scala's Futures without introducing a full effect system.
+If you're starting a green-field project then you should totally learn and use a real effect system.
+If you just need to limit the parallelism of some Futures or implement a simple Retry, you might give this one a try.
 
 ## API
 

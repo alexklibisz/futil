@@ -39,8 +39,9 @@ object Futil {
   /**
     * Run the Future after delaying for the given Duration.
     */
-  final def delay[A](duration: Duration)(fa: => Future[A])(implicit ec: ExecutionContext,
-                                                           scheduler: ScheduledExecutorService): Future[A] = {
+  final def delay[A](
+      duration: Duration
+  )(fa: => Future[A])(implicit ec: ExecutionContext, scheduler: ScheduledExecutorService): Future[A] = {
     val p = Promise[A]()
     val t = new Callable[Unit] {
       override def call(): Unit = fa.onComplete(p.complete)
@@ -52,8 +53,9 @@ object Futil {
   /**
     * Asynchronously sleep for the given duration.
     */
-  final def sleep(duration: Duration)(implicit ec: ExecutionContext,
-                                      scheduler: ScheduledExecutorService): Future[Unit] =
+  final def sleep(
+      duration: Duration
+  )(implicit ec: ExecutionContext, scheduler: ScheduledExecutorService): Future[Unit] =
     delay(duration)(Future.successful(()))
 
   /**

@@ -4,13 +4,11 @@ import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.duration.DurationLong
-import scala.concurrent.{ExecutionContext, Future, TimeoutException}
+import scala.concurrent.{Future, TimeoutException}
 
-import Futil.Implicits.timer
+class TimingSpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers {
 
-class TimingSpec extends AsyncFreeSpec with Matchers {
-
-  override implicit val executionContext: ExecutionContext = ExecutionContext.global
+  import Futil.Implicits.timer
 
   case class Expected() extends Throwable
 

@@ -93,13 +93,13 @@ val inputs: Seq[Int] = 0 to 9999
 def f(i: Int): Future[Double] = callService(i).map(_ * 3.14)
 
 // Returns a Seq[Try[...]], indicating that some of the calls might have failed. 
-val outputs: Future[Seq[Try[Double]]] = Futil.mapParN(numInParallel)(inputs)(f)
+val outputs: Future[Seq[Try[Double]]] = Futil.traverseParN(numInParallel)(inputs)(f)
 ```
 
 Run a Future for every item in a Seq, exactly one at a time.
 
 ```scala mdoc
-val outputsSerial: Future[Seq[Try[Double]]] = Futil.mapSerial(inputs)(f)
+val outputsSerial: Future[Seq[Try[Double]]] = Futil.traverseSerial(inputs)(f)
 ```
 
 ### Retries

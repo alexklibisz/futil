@@ -1,8 +1,8 @@
 package futil
 
 import java.util.{Timer, TimerTask}
-import scala.concurrent.duration._
 import scala.concurrent._
+import scala.concurrent.duration._
 import scala.util.Try
 
 /** Utilities to get more from Scala Futures. */
@@ -26,7 +26,7 @@ object Futil {
   }
 
   /**
-    * If the Future takes more than the given duration to complete, return a failed Future with a TimeoutException.
+    * If the Future takes more than the given Duration to complete, return a failed Future with a TimeoutException.
     */
   final def deadline[A](
       duration: Duration
@@ -37,7 +37,7 @@ object Futil {
   }
 
   /**
-    * Run the `fa` Future after delaying for `duration`.
+    * Run the Future after delaying for the given Duration.
     */
   final def delay[A](duration: Duration)(fa: => Future[A])(implicit ec: ExecutionContext, timer: Timer): Future[A] = {
     val p = Promise[A]()
@@ -53,16 +53,18 @@ object Futil {
     * Lifts the result of the Future[B] into a Future[Try[B]\] to prevent failing the entire Seq.
     * Results are returned in the original order.
     */
-  final def mapParN[A, B](n: Int)(as: Seq[A])(f: A => Future[B])(implicit ec: ExecutionContext): Future[Seq[Try[B]]] = {
+  final def traverseParN[A, B](
+      n: Int
+  )(as: Seq[A])(f: A => Future[B])(implicit ec: ExecutionContext): Future[Seq[Try[B]]] = {
     val sem = semaphore(n)
     Future.sequence(as.map(a => sem.withPermit(thunk(f(a).transformWith(Future.successful)))))
   }
 
   /**
-    * Alias for [[mapParN]] with n = 1.
+    * Alias for [[traverseParN]] with n = 1.
     */
-  final def mapSerial[A, B](as: Seq[A])(f: A => Future[B])(implicit ec: ExecutionContext): Future[Seq[Try[B]]] =
-    mapParN(1)(as)(f)
+  final def traverseSerial[A, B](as: Seq[A])(f: A => Future[B])(implicit ec: ExecutionContext): Future[Seq[Try[B]]] =
+    traverseParN(1)(as)(f)
 
   /**
     * Retry the given Future according to the given [[RetryPolicy]].

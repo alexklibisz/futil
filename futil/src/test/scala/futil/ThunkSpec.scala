@@ -4,13 +4,12 @@ import org.scalatest.Succeeded
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class ThunkSpec extends AsyncFreeSpec with Matchers {
+class ThunkSpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers {
 
   import Futil.Implicits.timer
-  override implicit val executionContext: ExecutionContext = ExecutionContext.global
 
   "Thunk" - {
 

@@ -1,7 +1,5 @@
 package futil
 
-import futil.Futil.Implicits.timer
-import futil.RetryPolicy._
 import org.scalatest.Inspectors
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
@@ -11,9 +9,12 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class RetrySpec extends AsyncFreeSpec with Matchers with Inspectors {
+class RetrySpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers with Inspectors {
 
   case class Expected() extends Throwable
+
+  import Futil.Implicits.timer
+  import RetryPolicy._
 
   "repeat" - {
 

@@ -7,12 +7,10 @@ import scala.concurrent.duration._
 import scala.concurrent._
 import org.scalatest.Succeeded
 
-class AsyncSemaphoreSpec extends AsyncFreeSpec with Matchers {
-
-  override implicit val executionContext: ExecutionContext = ExecutionContext.global
+class AsyncSemaphoreSpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers {
 
   import Futil._
-  import Implicits.timer
+  import Futil.Implicits.timer
 
   "AsyncSemaphore" - {
 

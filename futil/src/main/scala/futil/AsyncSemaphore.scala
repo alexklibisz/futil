@@ -2,7 +2,6 @@ package futil
 
 import java.util.concurrent.atomic.AtomicReference
 import scala.concurrent.{ExecutionContext, Future, Promise}
-import scala.util.control.NonFatal
 
 /**
   * Semaphore that asynchronously grants a fixed number of permits.
@@ -47,10 +46,9 @@ final class AsyncSemaphore private[futil] (permits: Int) extends Serializable {
   def withPermit[A](f: () => Future[A])(implicit ec: ExecutionContext): Future[A] =
     for {
       _ <- acquire()
-      a <- f().recoverWith {
-        case NonFatal(e) => release().flatMap(_ => Future.failed(e))
-      }
+      ta <- f().transformWith(Future.successful)
       _ <- release()
+      a <- Future.fromTry(ta)
     } yield a
 
   private[futil] def inspect(): Future[(Int, Int)] = {

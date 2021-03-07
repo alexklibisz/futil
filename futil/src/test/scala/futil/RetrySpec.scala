@@ -1,7 +1,5 @@
 package futil
 
-import futil.Futil.Implicits.timer
-import futil.RetryPolicy._
 import org.scalatest.Inspectors
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
@@ -11,9 +9,12 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class RetrySpec extends AsyncFreeSpec with Matchers with Inspectors {
+class RetrySpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers with Inspectors {
 
   case class Expected() extends Throwable
+
+  import Futil.Implicits.timer
+  import RetryPolicy._
 
   "repeat" - {
 
@@ -23,7 +24,7 @@ class RetrySpec extends AsyncFreeSpec with Matchers with Inspectors {
         Future {
           failures.append(Expected())
           throw Expected()
-        }
+      }
       Futil.retry(Repeat(3))(f).transformWith { t =>
         t shouldBe Failure(Expected())
         failures.toList should have length 4
@@ -39,7 +40,7 @@ class RetrySpec extends AsyncFreeSpec with Matchers with Inspectors {
             failures.append(Expected())
             throw Expected()
           }
-        }
+      }
       Futil.retry(Repeat(3))(f).transformWith { t =>
         t shouldBe Success(())
         failures.length shouldBe 3
@@ -76,7 +77,7 @@ class RetrySpec extends AsyncFreeSpec with Matchers with Inspectors {
         Future {
           failures.append(Expected())
           throw Expected()
-        }
+      }
       val r = Futil.retry(FixedBackoff(3, 1000.millis))(f)
       Futil.timed(r.transformWith(Future.successful)).flatMap {
         case (t, duration: Duration) =>
@@ -94,7 +95,7 @@ class RetrySpec extends AsyncFreeSpec with Matchers with Inspectors {
             failures.append(Expected())
             throw Expected()
           }
-        }
+      }
       val r = Futil.retry(FixedBackoff(10, 200.millis))(f)
       Futil.timed(r.transformWith(Future.successful)).flatMap {
         case (t, duration: Duration) =>
@@ -110,7 +111,7 @@ class RetrySpec extends AsyncFreeSpec with Matchers with Inspectors {
         Future {
           times.append(System.nanoTime())
           throw Expected()
-        }
+      }
       Futil.retry(FixedBackoff(10, 100.millis))(f).transformWith { t =>
         t shouldBe Failure(Expected())
         val gaps = times.zip(times.tail).map(t => t._2 - t._1).map(_.nanos.toMillis)
@@ -139,7 +140,7 @@ class RetrySpec extends AsyncFreeSpec with Matchers with Inspectors {
         Future {
           failures.append(Expected())
           throw Expected()
-        }
+      }
       val r = Futil.retry(ExponentialBackoff(3, 100.millis))(f)
       Futil.timed(r.transformWith(Future.successful)).flatMap {
         case (t, duration: Duration) =>
@@ -157,7 +158,7 @@ class RetrySpec extends AsyncFreeSpec with Matchers with Inspectors {
             failures.append(Expected())
             throw Expected()
           }
-        }
+      }
       val r = Futil.retry(ExponentialBackoff(10, 100.millis))(f)
       Futil.timed(r.transformWith(Future.successful)).flatMap {
         case (t, duration: Duration) =>
@@ -173,7 +174,7 @@ class RetrySpec extends AsyncFreeSpec with Matchers with Inspectors {
         Future {
           times.append(System.nanoTime())
           throw Expected()
-        }
+      }
       Futil.retry(ExponentialBackoff(5, 100.millis))(f).transformWith { t =>
         t shouldBe Failure(Expected())
         val gaps = times.zip(times.tail).map(t => t._2 - t._1).map(_.nanos.toMillis / 100d).toVector

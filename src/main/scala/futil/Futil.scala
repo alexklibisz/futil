@@ -28,7 +28,9 @@ object Futil {
   /**
     * If the Future takes more than the given duration to complete, return a failed Future with a TimeoutException.
     */
-  final def deadline[A](duration: Duration)(fa: => Future[A])(implicit ec: ExecutionContext, timer: Timer): Future[A] = {
+  final def deadline[A](
+      duration: Duration
+  )(fa: => Future[A])(implicit ec: ExecutionContext, timer: Timer): Future[A] = {
     val ex = new TimeoutException(s"The given future did not complete within the given duration: $duration.")
     val other = delay(duration)(Future.failed(ex))
     Future.firstCompletedOf(Seq(fa, other))
@@ -65,7 +67,9 @@ object Futil {
   /**
     * Retry the given Future according to the given [[RetryPolicy]].
     */
-  final def retry[A](policy: RetryPolicy[A])(fa: () => Future[A])(implicit ec: ExecutionContext, timer: Timer): Future[A] =
+  final def retry[A](
+      policy: RetryPolicy[A]
+  )(fa: () => Future[A])(implicit ec: ExecutionContext, timer: Timer): Future[A] =
     fa().transformWith { t =>
       policy match {
         case p @ RetryPolicy.Repeat(n, d) =>

@@ -87,12 +87,12 @@ Run a Future for every item in a Seq, limiting the number of Futures running in 
 This is a form of self rate-limiting, particularly useful when dealing with flaky or rate-limited external services.
 
 ```scala mdoc
-val n = 16
+val numInParallel = 16
 val inputs: Seq[Int] = 0 to 9999
 def f(i: Int): Future[Double] = callService(i).map(_ * 3.14)
 
 // Return a Seq[Try[...]], since some of the calls might have failed. 
-val outputs: Future[Seq[Try[Double]]] = Futil.mapParN(n)(inputs)(f)
+val outputs: Future[Seq[Try[Double]]] = Futil.mapParN(numInParallel)(inputs)(f)
 ```
 
 Run a Future for every item in a Seq, exactly one at a time.
@@ -103,5 +103,40 @@ val outputsSerial: Future[Seq[Try[Double]]] = Futil.mapSerial(inputs)(f)
 
 ### Retries
 
+Retry a fixed number of times.
 
+```scala mdoc
+// Retry on failure 3 times.
+Futil.retry(RetryPolicy.Repeat(3))(() => callService(42))
+```
 
+Retry a fixed number of times, or stop early based on the result of the previous call.
+
+```scala mdoc
+// Early stop if the last call returned a throwable containign the word "please".
+def earlyStop(t: Try[Int]): Future[Boolean] = t match {
+  case Failure(t) => Future.successful(t.getMessage.contains("please"))
+  case _          => Future.successful(false)
+}
+Futil.retry(RetryPolicy.Repeat(3, earlyStop))(() => callService(42))
+```
+
+Retry with a fixed delay between calls.
+
+```scala mdoc
+// Retry 3 times, waiting 3 seconds between each call.
+Futil.retry(RetryPolicy.FixedBackoff(3, 3.seconds))(() => callService(42))
+
+// Early stop if asked nicely.
+Futil.retry(RetryPolicy.FixedBackoff(3, 3.seconds, earlyStop))(() => callService(42))
+```
+
+Retry with exponential delay between calls.
+
+```scala mdoc
+// Retry 3 times, first delay is 2s, then 4s, then 8s.
+Futil.retry(RetryPolicy.ExponentialBackoff(3, 2.seconds))(() => callService(42))
+
+// Early stop if asked nicely.
+Futil.retry(RetryPolicy.ExponentialBackoff(3, 2.seconds, earlyStop))(() => callService(42))
+```

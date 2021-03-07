@@ -1,6 +1,6 @@
 package futil
 
-import java.util.concurrent.{Callable, Executors, ScheduledExecutorService}
+import java.util.concurrent.{Callable, Executors, ScheduledExecutorService, ThreadFactory}
 import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.Try
@@ -9,7 +9,18 @@ import scala.util.Try
 object Futil {
 
   object Implicits {
-    lazy implicit val scheduler: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
+    lazy implicit val scheduler: ScheduledExecutorService = {
+      // Need a daemon thread factory, otherwise an app will hang if the scheduler is not explicitly terminated.
+      val tf = new ThreadFactory {
+        override def newThread(runnable: Runnable): Thread = {
+          val t = Executors.defaultThreadFactory().newThread(runnable)
+          t.setDaemon(true)
+          t.setName("futil-default-scheduler")
+          t
+        }
+      }
+      Executors.newSingleThreadScheduledExecutor(tf)
+    }
   }
 
   /**

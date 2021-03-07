@@ -107,7 +107,8 @@ class ParallelismSpec extends AsyncFreeSpec with Matchers {
 
     "1 million mixed delays and fibonaccis" in {
       val as = (0 to 999999)
-      val f = (i: Int) => if (i % 2 == 0) Future(fib(i % 28)) else Futil.delay((i % 30000 + 10000).nanos)(Future.successful(()))
+      val f = (i: Int) =>
+        if (i % 2 == 0) Future(fib(i % 28)) else Futil.delay((i % 30000 + 10000).nanos)(Future.successful(()))
       Futil.mapParN(2)(as)(f).flatMap(_.toVector.length shouldBe as.length)
     }
 

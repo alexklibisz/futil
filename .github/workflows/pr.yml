@@ -36,8 +36,10 @@ jobs:
       - uses: olafurpg/setup-scala@v10
         with:
           java-version: 14
-      - name: scalafmt
-        run: sbt -batch "++ ${{ matrix.scala }} doc"
+      - name: doc
+        run: sbt -batch "++ ${{ matrix.scala }} futil/doc"
+      - name: mdoc
+        run: sbt -batch "++ ${{ matrix.scala }} docs/mdoc"
 
   tests:
     runs-on: ubuntu-20.04
@@ -51,6 +53,8 @@ jobs:
           java-version: 14
       - name: update
         run: sbt -batch "++ ${{ matrix.scala }} update"
+      - name: evictions
+        run: sbt -batch "++ ${{ matrix.scala }} futil/evictionCheck"
       - name: compile
         run: sbt -batch "++ ${{ matrix.scala }} compile"
       - name: test-compile

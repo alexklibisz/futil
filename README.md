@@ -4,12 +4,13 @@ Zero-dependency utilities for Scala Futures.
 
 ## Purpose
 
-Scala's built-in [Futures](https://docs.scala-lang.org/overviews/core/futures.html) are a good abstraction for concurrent 
-and asynchronous programming, but they have some quirks.[^1]
+Scala's built-in [Futures](https://docs.scala-lang.org/overviews/core/futures.html) are a pretty good abstraction for 
+concurrent and asynchronous programming, but they have some quirks (e.g., lack of referential transparency).
 
-Effect systems and IO Monads like those provided by cats-effect, ZIO, monix, akka, etc. add many useful features
+Effect systems and IO Monads like those provided by cats-effect, ZIO, monix, akka, etc. have many useful features
 for concurrent and asynchronous programming, but they can be difficult to introduce in an established codebase.
-This library aims to add some mileage to Scala's Futures without introducing a totally new effect system.
+
+This library aims to add some mileage to Scala's Futures without introducing a full effect system.
 
 ## API
 
@@ -143,9 +144,60 @@ Futil.retry(RetryPolicy.ExponentialBackoff(3, 2.seconds))(() => callService(42))
 Futil.retry(RetryPolicy.ExponentialBackoff(3, 2.seconds, earlyStop))(() => callService(42))
 ```
 
-### Asynchronous Semaphore
+### Asynchronous Semaphore (Advanced)
 
----
+A semaphore lets us acquire and release a fixed number of permits to limit access to some resource.
+An asynchronous semaphore lets us acquire and release asynchronously.
 
-[^1]: [Reddit: Why is Future totally unusable](https://www.reddit.com/r/scala/comments/3zofjl/why_is_future_totally_unusable/),
-  [John de Goes: Upgrade your Future](https://www.youtube.com/watch?v=USgfku1h7Hw)
+Acquire and release permits:
+
+```scala mdoc
+val sem = Futil.semaphore(2)
+for {
+  _ <- sem.acquire()
+  _ <- callService(42)
+  _ <- sem.release()
+} yield ()
+```
+
+Be careful: if your method fails, the release method must still be called:
+
+```scala mdoc
+for {
+  _ <- sem.acquire()
+  _ <- Future.failed(new Exception("uh oh!"))
+  _ <- sem.release() // This won't be called!
+} yield ()
+```
+
+Use the `withPermit` method to ensure the permit is released:
+
+```scala mdoc
+for {
+  _ <- sem.withPermit(() => callService(42))
+  _ <- sem.withPermit(() => Future.failed(new Exception("uh oh!"))) // Will still release the permit.
+} yield ()
+```
+
+Here's a real use-case: we have a singleton client to some service, and want to ensure the client makes at most 10 
+parallel calls to the service at any given time.
+
+```scala mdoc
+
+class SomeServiceClient(parallelism: Int) {
+
+  private val sem = Futil.semaphore(parallelism)
+
+  def getFooById(id: Int): Future[String] = 
+    sem.withPermit(() => callService(id).map(i => s"Foo: $i"))
+      
+  def getBarById(id: Int): Future[String] =
+    sem.withPermit(() => callService(id).map(i => s"Bar: $i"))
+} 
+
+// The service can only handle 10 parallel calls.
+val client = new SomeServiceClient(10)
+
+// Get all the foos without making the service fall over.
+val foos = Future.sequence((0 to 999).map(client.getFooById(_)))
+```

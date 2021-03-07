@@ -36,8 +36,10 @@ jobs:
       - uses: olafurpg/setup-scala@v10
         with:
           java-version: 14
-      - name: scalafmt
+      - name: doc
         run: sbt -batch "++ ${{ matrix.scala }} doc"
+      - name: mdoc
+        run: sbt -batch "++ ${{ matrix.scala }} mdoc"
 
   tests:
     runs-on: ubuntu-20.04

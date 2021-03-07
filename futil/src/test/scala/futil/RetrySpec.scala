@@ -24,7 +24,7 @@ class RetrySpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers 
         Future {
           failures.append(Expected())
           throw Expected()
-        }
+      }
       Futil.retry(Repeat(3))(f).transformWith { t =>
         t shouldBe Failure(Expected())
         failures.toList should have length 4
@@ -40,7 +40,7 @@ class RetrySpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers 
             failures.append(Expected())
             throw Expected()
           }
-        }
+      }
       Futil.retry(Repeat(3))(f).transformWith { t =>
         t shouldBe Success(())
         failures.length shouldBe 3
@@ -77,11 +77,12 @@ class RetrySpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers 
         Future {
           failures.append(Expected())
           throw Expected()
-        }
+      }
       val r = Futil.retry(FixedBackoff(3, 1000.millis))(f)
       Futil.timed(r.transformWith(Future.successful)).flatMap {
         case (t, duration: Duration) =>
           t shouldBe Failure(Expected())
+          info(duration.toString)
           duration.toSeconds shouldBe 3
       }
     }
@@ -95,12 +96,12 @@ class RetrySpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers 
             failures.append(Expected())
             throw Expected()
           }
-        }
+      }
       val r = Futil.retry(FixedBackoff(10, 200.millis))(f)
       Futil.timed(r.transformWith(Future.successful)).flatMap {
         case (t, duration: Duration) =>
           t shouldBe Success(())
-          info(s"Completed in $duration")
+          info(duration.toString)
           duration.toSeconds shouldBe 1
           failures.length shouldBe 5
       }
@@ -112,7 +113,7 @@ class RetrySpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers 
         Future {
           times.append(System.nanoTime())
           throw Expected()
-        }
+      }
       Futil.retry(FixedBackoff(10, 100.millis))(f).transformWith { t =>
         t shouldBe Failure(Expected())
         val gaps = times.zip(times.tail).map(t => t._2 - t._1).map(_.nanos.toMillis)
@@ -141,7 +142,7 @@ class RetrySpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers 
         Future {
           failures.append(Expected())
           throw Expected()
-        }
+      }
       val r = Futil.retry(ExponentialBackoff(3, 100.millis))(f)
       Futil.timed(r.transformWith(Future.successful)).flatMap {
         case (t, duration: Duration) =>
@@ -159,7 +160,7 @@ class RetrySpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers 
             failures.append(Expected())
             throw Expected()
           }
-        }
+      }
       val r = Futil.retry(ExponentialBackoff(10, 100.millis))(f)
       Futil.timed(r.transformWith(Future.successful)).flatMap {
         case (t, duration: Duration) =>
@@ -175,7 +176,7 @@ class RetrySpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers 
         Future {
           times.append(System.nanoTime())
           throw Expected()
-        }
+      }
       Futil.retry(ExponentialBackoff(5, 100.millis))(f).transformWith { t =>
         t shouldBe Failure(Expected())
         val gaps = times.zip(times.tail).map(t => t._2 - t._1).map(_.nanos.toMillis / 100d).toVector

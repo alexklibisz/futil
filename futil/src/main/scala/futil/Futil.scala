@@ -1,6 +1,6 @@
 package futil
 
-import java.util.concurrent.{Callable, ScheduledExecutorService, ScheduledThreadPoolExecutor}
+import java.util.concurrent.{Callable, Executors, ScheduledExecutorService}
 import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.Try
@@ -9,7 +9,7 @@ import scala.util.Try
 object Futil {
 
   object Implicits {
-    lazy implicit val scheduler: ScheduledExecutorService = new ScheduledThreadPoolExecutor(1)
+    lazy implicit val scheduler: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
   }
 
   /**

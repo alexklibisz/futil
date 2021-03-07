@@ -2,7 +2,7 @@ package futil
 
 import java.util.{Timer, TimerTask}
 import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext, Future, Promise, TimeoutException}
+import scala.concurrent._
 import scala.util.Try
 
 /** Utilities to get more from Scala Futures. */
@@ -13,19 +13,25 @@ object Futil {
   }
 
   /**
-    * Construct an [[AsyncSemaphore]] with the specified number of permits.
+    * Lift a call-by-name Future[A] into a () => Future[A].
     */
-  final def semaphore(permits: Int): AsyncSemaphore = {
-    require(permits > 0, "semaphore must have at least 1 permit")
-    new AsyncSemaphore(permits)
-  }
+  final def thunk[A](fa: => Future[A]): () => Future[A] = () => fa
 
   /**
-    * Time the execution of the `fa` Future with nanosecond precision.
+    * Times the execution of the Future with nanosecond precision.
     */
   final def timed[A](fa: => Future[A])(implicit ec: ExecutionContext): Future[(A, Duration)] = {
     val t0 = System.nanoTime()
     fa.map(_ -> (System.nanoTime() - t0).nanos)
+  }
+
+  /**
+    * If the Future takes more than the given duration to complete, return a failed Future with a TimeoutException.
+    */
+  final def deadline[A](duration: Duration)(fa: => Future[A])(implicit ec: ExecutionContext, timer: Timer): Future[A] = {
+    val ex = new TimeoutException(s"The given future did not complete within the given duration: $duration.")
+    val other = delay(duration)(Future.failed(ex))
+    Future.firstCompletedOf(Seq(fa, other))
   }
 
   /**
@@ -41,22 +47,13 @@ object Futil {
   }
 
   /**
-    * If the `fa` future takes more than the given `duration` to complete, return a failed Future with a TimeoutException.
-    */
-  final def deadline[A](duration: Duration)(fa: => Future[A])(implicit ec: ExecutionContext, timer: Timer): Future[A] = {
-    val ex = new TimeoutException(s"The given future did not complete within the given duration: $duration.")
-    val other = delay(duration)(Future.failed(ex))
-    Future.firstCompletedOf(Seq(fa, other))
-  }
-
-  /**
     * Use function f to map each element in as to a Future[B], running at most n Futures at a time.
     * Lifts the result of the Future[B] into a Future[Try[B]\] to prevent failing the entire Seq.
     * Results are returned in the original order.
     */
   final def mapParN[A, B](n: Int)(as: Seq[A])(f: A => Future[B])(implicit ec: ExecutionContext): Future[Seq[Try[B]]] = {
     val sem = semaphore(n)
-    Future.sequence(as.map(a => sem.withPermit(() => f(a).transformWith(Future.successful))))
+    Future.sequence(as.map(a => sem.withPermit(thunk(f(a).transformWith(Future.successful)))))
   }
 
   /**
@@ -82,5 +79,13 @@ object Futil {
           else Future.fromTry(t)
       }
     }
+
+  /**
+    * Construct an [[AsyncSemaphore]] with the specified number of permits.
+    */
+  final def semaphore(permits: Int): AsyncSemaphore = {
+    require(permits > 0, "semaphore must have at least 1 permit")
+    new AsyncSemaphore(permits)
+  }
 
 }

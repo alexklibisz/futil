@@ -13,7 +13,7 @@ class RetrySpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers 
 
   case class Expected() extends Throwable
 
-  import Futil.Implicits.timer
+  import Futil.Implicits.scheduler
   import RetryPolicy._
 
   "repeat" - {
@@ -82,6 +82,7 @@ class RetrySpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers 
       Futil.timed(r.transformWith(Future.successful)).flatMap {
         case (t, duration: Duration) =>
           t shouldBe Failure(Expected())
+          info(duration.toString)
           duration.toSeconds shouldBe 3
       }
     }
@@ -100,6 +101,7 @@ class RetrySpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers 
       Futil.timed(r.transformWith(Future.successful)).flatMap {
         case (t, duration: Duration) =>
           t shouldBe Success(())
+          info(duration.toString)
           duration.toSeconds shouldBe 1
           failures.length shouldBe 5
       }

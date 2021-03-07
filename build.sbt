@@ -1,6 +1,12 @@
 
-lazy val futil = project.in(file("."))
-  .enablePlugins(MdocPlugin)
+lazy val root = project.in(file("."))
+  .aggregate(futil, docs)
+  .settings(
+    name := "futil-root",
+    publishArtifact := false
+  )
+
+lazy val futil = project.in(file("futil"))
   .settings(
     name := "futil",
     description := "Zero-dependency utilities for Scala Futures",
@@ -20,8 +26,14 @@ lazy val futil = project.in(file("."))
     coverageFailOnMinimum := true,
     fork in Test := true,
     javaOptions in Test ++= Seq("-Xms768m", "-Xmx768m"),
-    parallelExecution in Test := false,
+    parallelExecution in Test := false
+  )
 
+lazy val docs = project.in(file("docs"))
+  .enablePlugins(MdocPlugin)
+  .dependsOn(futil)
+  .settings(
+    publishArtifact := false,
     // mdoc is only used to "compile" the readme.
     mdocIn := file("README.md"),
     mdocOut := file("/dev/null")

@@ -53,6 +53,8 @@ jobs:
           java-version: 14
       - name: update
         run: sbt -batch "++ ${{ matrix.scala }} update"
+      - name: evictions
+        run: sbt -btach "++ ${{ matrix.scala }} futil/evictionCheck"
       - name: compile
         run: sbt -batch "++ ${{ matrix.scala }} compile"
       - name: test-compile

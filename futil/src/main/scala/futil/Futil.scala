@@ -1,6 +1,7 @@
 package futil
 
 import java.util.concurrent.{Callable, Executors, ScheduledExecutorService, ThreadFactory}
+import scala.concurrent.Future.fromTry
 import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.Try
@@ -91,19 +92,20 @@ object Futil {
     * Retry the given Future according to the given [[RetryPolicy]].
     */
   final def retry[A](
-      policy: RetryPolicy[A]
+      policy: RetryPolicy,
+      earlyStop: Try[A] => Future[Boolean] = (t: Try[A]) => Future.successful(t.isSuccess)
   )(fa: () => Future[A])(implicit ec: ExecutionContext, scheduler: ScheduledExecutorService): Future[A] =
     fa().transformWith { t =>
       policy match {
-        case p @ RetryPolicy.Repeat(n, d) =>
-          if (n > 0) d(t).flatMap(if (_) Future.fromTry(t) else retry(p.copy(n - 1))(fa))
-          else Future.fromTry(t)
-        case p @ RetryPolicy.FixedBackoff(n, w, d) =>
-          if (n > 0) d(t).flatMap(if (_) Future.fromTry(t) else delay(w)(retry(p.copy(n - 1))(fa)))
-          else Future.fromTry(t)
-        case p @ RetryPolicy.ExponentialBackoff(n, w, d) =>
-          if (n > 0) d(t).flatMap(if (_) Future.fromTry(t) else delay(w)(retry(p.copy(n - 1, w * 2))(fa)))
-          else Future.fromTry(t)
+        case p @ RetryPolicy.Repeat(n) =>
+          if (n > 0) earlyStop(t).flatMap(if (_) fromTry(t) else retry(p.copy(n - 1), earlyStop)(fa))
+          else fromTry(t)
+        case p @ RetryPolicy.FixedBackoff(n, w) =>
+          if (n > 0) earlyStop(t).flatMap(if (_) fromTry(t) else delay(w)(retry(p.copy(n - 1), earlyStop)(fa)))
+          else fromTry(t)
+        case p @ RetryPolicy.ExponentialBackoff(n, w) =>
+          if (n > 0) earlyStop(t).flatMap(if (_) fromTry(t) else delay(w)(retry(p.copy(n - 1, w * 2), earlyStop)(fa)))
+          else fromTry(t)
       }
     }
 

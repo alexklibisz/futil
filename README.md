@@ -132,7 +132,7 @@ def earlyStop(t: Try[Int]): Future[Boolean] = t match {
   case Failure(t) => Future.successful(t.getMessage.contains("please"))
   case _          => Future.successful(false)
 }
-Futil.retry(RetryPolicy.Repeat(3, earlyStop))(() => callService(42))
+Futil.retry(RetryPolicy.Repeat(3), earlyStop)(() => callService(42))
 ```
 
 Retry with a fixed delay between calls.
@@ -142,7 +142,7 @@ Retry with a fixed delay between calls.
 Futil.retry(RetryPolicy.FixedBackoff(3, 3.seconds))(() => callService(42))
 
 // Early stop if asked nicely.
-Futil.retry(RetryPolicy.FixedBackoff(3, 3.seconds, earlyStop))(() => callService(42))
+Futil.retry(RetryPolicy.FixedBackoff(3, 3.seconds), earlyStop)(() => callService(42))
 ```
 
 Retry with exponential delay between calls.
@@ -152,7 +152,7 @@ Retry with exponential delay between calls.
 Futil.retry(RetryPolicy.ExponentialBackoff(3, 2.seconds))(() => callService(42))
 
 // Early stop if asked nicely.
-Futil.retry(RetryPolicy.ExponentialBackoff(3, 2.seconds, earlyStop))(() => callService(42))
+Futil.retry(RetryPolicy.ExponentialBackoff(3, 2.seconds), earlyStop)(() => callService(42))
 ```
 
 ### Asynchronous Semaphore (Advanced)

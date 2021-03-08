@@ -60,8 +60,8 @@ class RetrySpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers 
       var counter = 0
       val f = () => Future.failed { counter += 1; Expected() }
       val decision = (_: Try[Unit]) => Future.successful(counter >= 10)
-      val policy = Repeat(99, decision)
-      Futil.retry(policy)(f).transformWith { t =>
+      val policy = Repeat(99)
+      Futil.retry(policy, decision)(f).transformWith { t =>
         t shouldBe Failure(Expected())
         counter shouldBe 10
       }
@@ -125,8 +125,8 @@ class RetrySpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers 
       var counter = 0
       val f = () => Future.failed { counter += 1; Expected() }
       val decision = (_: Try[Unit]) => Future.successful(counter >= 10)
-      val policy = FixedBackoff(99, 100.millis, decision)
-      Futil.retry(policy)(f).transformWith { t =>
+      val policy = FixedBackoff(99, 100.millis)
+      Futil.retry(policy, decision)(f).transformWith { t =>
         t shouldBe Failure(Expected())
         counter shouldBe 10
       }
@@ -191,8 +191,8 @@ class RetrySpec extends AsyncFreeSpec with GlobalExecutionContext with Matchers 
       var counter = 0
       val f = () => Future.failed { counter += 1; Expected() }
       val decision = (_: Try[Unit]) => Future.successful(counter >= 10)
-      val policy = ExponentialBackoff(99, 2.millis, decision)
-      Futil.retry(policy)(f).transformWith { t =>
+      val policy = ExponentialBackoff(99, 2.millis)
+      Futil.retry(policy, decision)(f).transformWith { t =>
         t shouldBe Failure(Expected())
         counter shouldBe 10
       }

@@ -14,7 +14,6 @@ lazy val futil = project.in(file("futil"))
   .settings(
     name := "futil",
     description := "Zero-dependency utilities for Scala Futures",
-    version := "0.0.3-PRE7",
     // TODO: change this to com.klibisz.futil once OSSRH provisioning is complete.
     organization := "com.klibisz.elastiknn",
     crossScalaVersions := scalaVersions,

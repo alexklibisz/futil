@@ -5,11 +5,11 @@ import sbtrelease.ReleaseStateTransformations._
 organization := "com.klibisz.elastiknn"
 
 // To set the version, just strip -SNAPSHOT from the version.
-// "0.0.4-PRE1-SNAPSHOT" -> "0.0.4-PRE1"
+// "1.2.3-PRE1-SNAPSHOT" -> "1.2.3-PRE1"
 releaseVersion := { _.replace("-SNAPSHOT", "") }
 
 // To set the next version, increment the last number and append -SNAPSHOT.
-// "0.0.4-PRE1" -> "0.0.4-PRE2-SNAPSHOT"
+// "1.2.3-PRE1" -> "1.2.3-PRE2-SNAPSHOT"
 releaseNextVersion := { v: String =>
   "[0-9]+".r
     .findAllMatchIn(v)

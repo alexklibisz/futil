@@ -1,4 +1,5 @@
 import com.jsuereth.sbtpgp.PgpKeys._
+import sbtrelease.ReleaseStateTransformations._
 
 lazy val noPublishSettings = Seq(
   skip in publish := true,
@@ -24,12 +25,27 @@ releaseNextVersion := { v: String =>
     .getOrElse(v)
 }
 
+// Slightly modified to work with sbt-sonatype.
+releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies,
+  inquireVersions,
+  runClean,
+  runTest,
+  setReleaseVersion,
+  commitReleaseVersion,
+  tagRelease,
+  releaseStepCommand("+publishSigned"),
+  releaseStepCommand("+sonatypeBundleRelease"),
+  setNextVersion,
+  commitNextVersion,
+  pushChanges
+)
+
 lazy val root = project.in(file("."))
   .aggregate(futil, docs)
   .settings(
     name := "futil-root",
-    noPublishSettings,
-    publishTo := sonatypePublishToBundle.value
+    noPublishSettings
   )
 
 lazy val futil = project.in(file("futil"))
@@ -68,6 +84,5 @@ lazy val docs = project.in(file("docs"))
     noPublishSettings,
     crossScalaVersions := scalaVersions,
     mdocIn := file("README.md"),
-    mdocOut := file("/dev/null"),
-    publishTo := sonatypePublishToBundle.value
+    mdocOut := file("/dev/null")
   )

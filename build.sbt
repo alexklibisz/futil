@@ -1,4 +1,4 @@
-import sbtrelease.Version.Bump.Minor
+import sbtrelease.Version.Bump
 
 lazy val root = project.in(file("."))
   .aggregate(futil, docs)
@@ -47,7 +47,7 @@ lazy val futil = project.in(file("futil"))
     ),
 
     // sbt-release settings
-    releaseVersionBump := Minor
+    releaseVersionBump := Bump.Next
   )
 
 lazy val docs = project.in(file("docs"))

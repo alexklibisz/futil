@@ -2,11 +2,12 @@ import com.jsuereth.sbtpgp.PgpKeys._
 import sbtrelease.ReleaseStateTransformations._
 
 lazy val noPublishSettings = Seq(
-  skip in publish := true,
-  publishArtifact := false,
-  skip in publishSigned := true,
-  skip in publishConfiguration := true
-)
+  publish,
+  publishArtifact,
+  publishSigned,
+  publishConfiguration,
+  sonatypeBundleRelease
+).map(skip in _ := true)
 
 lazy val scalaVersions = List("2.12.12", "2.13.5")
 
@@ -27,6 +28,7 @@ releaseNextVersion := { v: String =>
 
 // Slightly modified to work with sbt-sonatype.
 releaseProcess := Seq[ReleaseStep](
+  releaseStep
   checkSnapshotDependencies,
   inquireVersions,
   runClean,
@@ -35,7 +37,7 @@ releaseProcess := Seq[ReleaseStep](
   commitReleaseVersion,
   tagRelease,
   releaseStepCommand("+publishSigned"),
-  releaseStepCommand("+sonatypeBundleRelease"),
+  releaseStepCommand("sonatypeBundleRelease"),
   setNextVersion,
   commitNextVersion,
   pushChanges

@@ -10,7 +10,14 @@ lazy val noPublishSettings = Seq(
 lazy val scalaVersions = List("2.12.12", "2.13.5")
 
 releaseVersion := { _.replace("-SNAPSHOT", "") }
-releaseVersionBump := Bump.Next
+releaseNextVersion := { v: String =>
+  "[0-9]+".r
+    .findAllMatchIn(v)
+    .toList
+    .lastOption
+    .map(m => v.take(m.start) ++ s"${v.a.toInt + 1}" ++ v.drop(m.start))
+    .getOrElse(v)
+}
 
 lazy val root = project.in(file("."))
   .aggregate(futil, docs)

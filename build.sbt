@@ -9,7 +9,7 @@ lazy val noPublishSettings = Seq(
 
 lazy val scalaVersions = List("2.12.12", "2.13.5")
 
-releaseVersion := { throw new RuntimeException("hi") }
+releaseVersion := { _.replace("-SNAPSHOT", "") }
 releaseVersionBump := Bump.Next
 
 lazy val root = project.in(file("."))

@@ -52,7 +52,7 @@ lazy val futil = project.in(file("futil"))
     ),
 
     // sbt-release settings
-    releaseVersion := { _.replace("-SNAPSHOT", "") },
+    releaseVersion := { throw new RuntimeException("hello"); _.replace("-SNAPSHOT", "") },
     releaseVersionBump := Bump.Next
   )
 

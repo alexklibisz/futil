@@ -1,12 +1,17 @@
-import sbtrelease.ReleaseStateTransformations._
+import com.jsuereth.sbtpgp.PgpKeys._
 import sbtrelease.Version.Bump
+
+lazy val noPublishSettings = Seq(
+  skip in publish := true,
+  publishArtifact := false,
+  skip in publishSigned := true
+)
 
 lazy val root = project.in(file("."))
   .aggregate(futil, docs)
   .settings(
     name := "futil-root",
-    skip in publish := true,
-    publishArtifact := false
+    noPublishSettings
   )
 
 lazy val scalaVersions = List("2.12.12", "2.13.5")
@@ -47,6 +52,7 @@ lazy val futil = project.in(file("futil"))
     ),
 
     // sbt-release settings
+    releaseVersion := { _.replace("-SNAPSHOT", "") },
     releaseVersionBump := Bump.Next
   )
 
@@ -54,19 +60,8 @@ lazy val docs = project.in(file("docs"))
   .enablePlugins(MdocPlugin)
   .dependsOn(futil)
   .settings(
+    noPublishSettings,
     crossScalaVersions := scalaVersions,
-    skip in publish := true,
-    publishArtifact := false,
     mdocIn := file("README.md"),
     mdocOut := file("/dev/null")
-  )
-
-lazy val `release-snapshot` = project.in(file(".release-snapshot"))
-  .aggregate(futil)
-  .settings(
-    releaseProcess := Seq[ReleaseStep](
-      checkSnapshotDependencies,
-      runClean,
-      releaseStepCommand("publishSigned")
-    )
   )

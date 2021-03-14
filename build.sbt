@@ -20,15 +20,18 @@ releaseNextVersion := { v: String =>
     .getOrElse(v)
 }
 
+releaseCrossBuild := true
+
 // Slightly modified to work with sbt-sonatype.
 releaseProcess := Seq[ReleaseStep](
   checkSnapshotDependencies,
   inquireVersions,
   runClean,
   setReleaseVersion,
-  releaseStepCommand(";reload;+ publishSigned;sonatypeBundleRelease"),
   commitReleaseVersion,
   tagRelease,
+  releaseStepCommandAndRemaining("+publishSigned"),
+  releaseStepCommand("sonatypeBundleRelease"),
   setNextVersion,
   commitNextVersion,
   pushChanges

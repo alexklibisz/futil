@@ -1,5 +1,4 @@
 import com.jsuereth.sbtpgp.PgpKeys._
-import sbtrelease.Version.Bump
 
 lazy val noPublishSettings = Seq(
   skip in publish := true,

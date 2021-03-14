@@ -2,7 +2,8 @@ import com.jsuereth.sbtpgp.PgpKeys._
 import sbtrelease.ReleaseStateTransformations._
 
 // TODO: change this to com.klibisz.futil once OSSRH provisioning is complete.
-organization := "com.klibisz.elastiknn"
+// Needs to be Global, else sbt-sonatype and sonatype are unhappy.
+Global / organization := "com.klibisz.elastiknn"
 
 // To set the version, just strip -SNAPSHOT from the version.
 // "1.2.3-PRE1-SNAPSHOT" -> "1.2.3-PRE1"
@@ -28,7 +29,7 @@ releaseProcess := Seq[ReleaseStep](
   setReleaseVersion,
   commitReleaseVersion,
   tagRelease,
-  releaseStepCommand("publishSigned"),
+  releaseStepCommand("+publishSigned"),
   releaseStepCommand("sonatypeBundleRelease"),
   setNextVersion,
   commitNextVersion,
@@ -72,7 +73,6 @@ lazy val futil = project.in(file("futil"))
 
     // sbt-sonatype settings
     publishTo := sonatypePublishToBundle.value,
-    sonatypeProfileName := "com.klibisz.elastiknn",
     publishMavenStyle := true,
     licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
     homepage := Some(url("https://github.com/alexklibisz/futil")),

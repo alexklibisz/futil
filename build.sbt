@@ -11,14 +11,12 @@ lazy val scalaVersions = List("2.12.12", "2.13.5")
 
 releaseVersion := { _.replace("-SNAPSHOT", "") }
 releaseNextVersion := { v: String =>
-  println(v)
   "[0-9]+".r
     .findAllMatchIn(v)
     .toList
     .lastOption
     .map { m =>
-      println((m.toString, m.start, m.`end`))
-      v.take(m.start) ++ s"${m.toString.toInt + 1}" ++ v.drop(m.`end`)
+      v.take(m.start) ++ s"${m.toString.toInt + 1}" ++ v.drop(m.`end`) + "-SNAPSHOT"
     }
     .getOrElse(v)
 }

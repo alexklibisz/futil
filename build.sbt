@@ -28,7 +28,6 @@ releaseNextVersion := { v: String =>
 
 // Slightly modified to work with sbt-sonatype.
 releaseProcess := Seq[ReleaseStep](
-  releaseStep
   checkSnapshotDependencies,
   inquireVersions,
   runClean,

@@ -1,3 +1,4 @@
+import sbtrelease.ReleaseStateTransformations._
 import sbtrelease.Version.Bump
 
 lazy val root = project.in(file("."))
@@ -58,4 +59,14 @@ lazy val docs = project.in(file("docs"))
     publishArtifact := false,
     mdocIn := file("README.md"),
     mdocOut := file("/dev/null")
+  )
+
+lazy val `release-snapshot` = project.in(file(".release-snapshot"))
+  .aggregate(futil)
+  .settings(
+    releaseProcess := Seq[ReleaseStep](
+      checkSnapshotDependencies,
+      runClean,
+      releaseStepCommand("publishSigned")
+    )
   )

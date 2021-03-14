@@ -1,8 +1,10 @@
+import sbtrelease.Version.Bump.Minor
 
 lazy val root = project.in(file("."))
   .aggregate(futil, docs)
   .settings(
     name := "futil-root",
+    skip in publish := true,
     publishArtifact := false
   )
 
@@ -29,7 +31,7 @@ lazy val futil = project.in(file("futil"))
     javaOptions in Test ++= Seq("-Xms768m", "-Xmx768m"),
     parallelExecution in Test := false,
 
-    // Release settings recommended by sbt-sonatype.
+    // sbt-sonatype settings
     publishTo := sonatypePublishToBundle.value,
     publishMavenStyle := true,
     licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
@@ -42,7 +44,10 @@ lazy val futil = project.in(file("futil"))
     ),
     developers := List(
       Developer(id="alexklibisz", name="Alex Klibisz", email="aklibisz@gmail.com", url=url("https://alexklibisz.com"))
-    )
+    ),
+
+    // sbt-release settings
+    releaseVersionBump := Minor
   )
 
 lazy val docs = project.in(file("docs"))
@@ -50,6 +55,7 @@ lazy val docs = project.in(file("docs"))
   .dependsOn(futil)
   .settings(
     crossScalaVersions := scalaVersions,
+    skip in publish := true,
     publishArtifact := false,
     mdocIn := file("README.md"),
     mdocOut := file("/dev/null")

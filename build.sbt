@@ -7,14 +7,17 @@ lazy val noPublishSettings = Seq(
   skip in publishSigned := true
 )
 
+lazy val scalaVersions = List("2.12.12", "2.13.5")
+
+releaseVersion := { throw new RuntimeException("hi") }
+releaseVersionBump := Bump.Next
+
 lazy val root = project.in(file("."))
   .aggregate(futil, docs)
   .settings(
     name := "futil-root",
     noPublishSettings
   )
-
-lazy val scalaVersions = List("2.12.12", "2.13.5")
 
 lazy val futil = project.in(file("futil"))
   .settings(
@@ -49,11 +52,7 @@ lazy val futil = project.in(file("futil"))
     ),
     developers := List(
       Developer(id="alexklibisz", name="Alex Klibisz", email="aklibisz@gmail.com", url=url("https://alexklibisz.com"))
-    ),
-
-    // sbt-release settings
-    releaseVersion := { throw new RuntimeException("hello"); _.replace("-SNAPSHOT", "") },
-    releaseVersionBump := Bump.Next
+    )
   )
 
 lazy val docs = project.in(file("docs"))

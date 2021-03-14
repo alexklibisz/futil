@@ -15,7 +15,10 @@ releaseNextVersion := { v: String =>
     .findAllMatchIn(v)
     .toList
     .lastOption
-    .map(m => v.take(m.start) ++ s"${m.source.toString.toInt + 1}" ++ v.drop(m.start))
+    .map { m =>
+      println((m, m.start, m.`end`))
+      v.take(m.start) ++ s"${m.source.toString.toInt + 1}" ++ v.drop(m.`end`)
+    }
     .getOrElse(v)
 }
 

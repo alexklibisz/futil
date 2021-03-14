@@ -1,6 +1,6 @@
 
 lazy val root = project.in(file("."))
-  .aggregate(futil)
+  .aggregate(futil, docs)
   .settings(
     name := "futil-root",
     publishArtifact := false
@@ -12,7 +12,7 @@ lazy val futil = project.in(file("futil"))
   .settings(
     name := "futil",
     description := "Zero-dependency utilities for Scala Futures",
-    version := "0.0.2",
+    version := "0.0.3-PRE5",
     organization := "com.klibisz.elastiknn",
     crossScalaVersions := scalaVersions,
     libraryDependencies ++= Seq(
@@ -30,7 +30,7 @@ lazy val futil = project.in(file("futil"))
     javaOptions in Test ++= Seq("-Xms768m", "-Xmx768m"),
     parallelExecution in Test := false,
 
-    // Sonatype bullshit.
+    // Release settings recommended by sbt-sonatype.
     publishTo := sonatypePublishToBundle.value,
     sonatypeProfileName := "com.klibisz.elastiknn",
     publishMavenStyle := true,
@@ -47,13 +47,12 @@ lazy val futil = project.in(file("futil"))
     )
   )
 
-//lazy val docs = project.in(file("docs"))
-//  .enablePlugins(MdocPlugin)
-//  .dependsOn(futil)
-//  .settings(
-//    crossScalaVersions := scalaVersions,
-//    publishArtifact := false,
-//    // mdoc is only used to "compile" the readme.
-//    mdocIn := file("README.md"),
-//    mdocOut := file("/dev/null")
-//  )
+lazy val docs = project.in(file("docs"))
+  .enablePlugins(MdocPlugin)
+  .dependsOn(futil)
+  .settings(
+    crossScalaVersions := scalaVersions,
+    publishArtifact := false,
+    mdocIn := file("README.md"),
+    mdocOut := file("/dev/null")
+  )

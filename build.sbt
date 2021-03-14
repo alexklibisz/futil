@@ -12,12 +12,11 @@ lazy val futil = project.in(file("futil"))
   .settings(
     name := "futil",
     description := "Zero-dependency utilities for Scala Futures",
-    version := "0.0.3-PRE5",
+    version := "0.0.3-PRE7",
+    // TODO: change this to com.klibisz.futil once OSSRH provisioning is complete.
     organization := "com.klibisz.elastiknn",
     crossScalaVersions := scalaVersions,
-    libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "3.2.5" % Test
-    ),
+    libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.5" % Test,
     scalacOptions ++= Seq(
       "-Xfatal-warnings",
       "-deprecation",
@@ -32,7 +31,6 @@ lazy val futil = project.in(file("futil"))
 
     // Release settings recommended by sbt-sonatype.
     publishTo := sonatypePublishToBundle.value,
-    sonatypeProfileName := "com.klibisz.elastiknn",
     publishMavenStyle := true,
     licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
     homepage := Some(url("https://github.com/alexklibisz/futil")),

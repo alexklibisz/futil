@@ -17,7 +17,7 @@ releaseNextVersion := { v: String =>
     .toList
     .lastOption
     .map { m =>
-      println((m, m.start, m.`end`))
+      println((m.source, m.start, m.`end`))
       v.take(m.start) ++ s"${m.source.toString.toInt + 1}" ++ v.drop(m.`end`)
     }
     .getOrElse(v)

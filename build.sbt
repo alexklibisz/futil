@@ -5,38 +5,6 @@ import sbtrelease.ReleaseStateTransformations._
 // Needs to be Global, else sbt-sonatype and sonatype are unhappy.
 Global / organization := "com.klibisz.elastiknn"
 
-// To set the version, just strip -SNAPSHOT from the version.
-// "1.2.3-PRE1-SNAPSHOT" -> "1.2.3-PRE1"
-releaseVersion := { _.replace("-SNAPSHOT", "") }
-
-// To set the next version, increment the last number and append -SNAPSHOT.
-// "1.2.3-PRE1" -> "1.2.3-PRE2-SNAPSHOT"
-releaseNextVersion := { v: String =>
-  "[0-9]+".r
-    .findAllMatchIn(v)
-    .toList
-    .lastOption
-    .map(m => v.take(m.start) ++ s"${m.toString.toInt + 1}" ++ v.drop(m.`end`) + "-SNAPSHOT")
-    .getOrElse(v)
-}
-
-releaseCrossBuild := true
-
-// Slightly modified to work with sbt-sonatype.
-releaseProcess := Seq[ReleaseStep](
-  checkSnapshotDependencies,
-  inquireVersions,
-  runClean,
-  setReleaseVersion,
-  commitReleaseVersion,
-  tagRelease,
-  releaseStepCommandAndRemaining("+publishSigned"),
-  releaseStepCommand("sonatypeBundleRelease"),
-  setNextVersion,
-  commitNextVersion,
-  pushChanges
-)
-
 lazy val scalaVersions = List("2.12.12", "2.13.5")
 
 lazy val noPublishSettings = Seq(
@@ -90,3 +58,37 @@ lazy val docs = project.in(file("docs"))
     mdocIn := file("README.md"),
     mdocOut := file("/dev/null")
   )
+
+// sbt-release configuration.
+
+// To set the version, just strip -SNAPSHOT from the version.
+// "1.2.3-PRE1-SNAPSHOT" -> "1.2.3-PRE1"
+releaseVersion := { _.replace("-SNAPSHOT", "") }
+
+// To set the next version, increment the last number and append -SNAPSHOT.
+// "1.2.3-PRE1" -> "1.2.3-PRE2-SNAPSHOT"
+releaseNextVersion := { v: String =>
+  "[0-9]+".r
+    .findAllMatchIn(v)
+    .toList
+    .lastOption
+    .map(m => v.take(m.start) ++ s"${m.toString.toInt + 1}" ++ v.drop(m.`end`) + "-SNAPSHOT")
+    .getOrElse(v)
+}
+
+releaseCrossBuild := true
+
+// Slightly modified to work with sbt-sonatype.
+releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies,
+  inquireVersions,
+  runClean,
+  setReleaseVersion,
+  commitReleaseVersion,
+  tagRelease,
+  releaseStepCommandAndRemaining("+publishSigned"),
+  releaseStepCommand("sonatypeBundleRelease"),
+  setNextVersion,
+  commitNextVersion,
+  pushChanges
+)

@@ -1,15 +1,8 @@
 import com.jsuereth.sbtpgp.PgpKeys._
 import sbtrelease.ReleaseStateTransformations._
 
-lazy val noPublishSettings = Seq(
-  publish,
-  publishArtifact,
-  publishSigned,
-  publishConfiguration,
-  sonatypeBundleRelease
-).map(skip in _ := true)
-
-lazy val scalaVersions = List("2.12.12", "2.13.5")
+// TODO: change this to com.klibisz.futil once OSSRH provisioning is complete.
+organization := "com.klibisz.elastiknn"
 
 // To set the version, just strip -SNAPSHOT from the version.
 // "0.0.4-PRE1-SNAPSHOT" -> "0.0.4-PRE1"
@@ -42,6 +35,16 @@ releaseProcess := Seq[ReleaseStep](
   pushChanges
 )
 
+lazy val scalaVersions = List("2.12.12", "2.13.5")
+
+lazy val noPublishSettings = Seq(
+  publish,
+  publishArtifact,
+  publishSigned,
+  publishConfiguration,
+  sonatypeBundleRelease
+).map(skip in _ := true)
+
 lazy val root = project.in(file("."))
   .aggregate(futil, docs)
   .settings(
@@ -53,8 +56,6 @@ lazy val futil = project.in(file("futil"))
   .settings(
     name := "futil",
     description := "Zero-dependency utilities for Scala Futures",
-    // TODO: change this to com.klibisz.futil once OSSRH provisioning is complete.
-    organization := "com.klibisz.elastiknn",
     crossScalaVersions := scalaVersions,
     libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.5" % Test,
     scalacOptions ++= Seq(

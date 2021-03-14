@@ -11,6 +11,7 @@ lazy val scalaVersions = List("2.12.12", "2.13.5")
 
 releaseVersion := { _.replace("-SNAPSHOT", "") }
 releaseNextVersion := { v: String =>
+  println(v)
   "[0-9]+".r
     .findAllMatchIn(v)
     .toList

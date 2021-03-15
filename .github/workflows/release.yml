@@ -8,12 +8,12 @@ jobs:
   release:
     runs-on: ubuntu-20.04
     steps:
+    - uses: actions/checkout@v2
     - name: Setup Credentials
       env:
         GPG_SECRET_B64: ${{ secrets.GPG_SECRET_B64 }}
         SBT_SONATYPE_B64: ${{ secrets.SBT_SONATYPE_B64 }}
       run: ./.github/scripts/secrets.sh
-    - uses: actions/checkout@v2
     - uses: olafurpg/setup-scala@v10
     - name: Release
       run: sbt -batch "release with-defaults"

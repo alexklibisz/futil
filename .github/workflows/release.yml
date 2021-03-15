@@ -15,6 +15,10 @@ jobs:
         SBT_SONATYPE_B64: ${{ secrets.SBT_SONATYPE_B64 }}
       run: ./.github/scripts/secrets.sh
     - uses: olafurpg/setup-scala@v10
+    - name: Git setup
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
     - name: Update
       run: sbt -batch update
     - name: Compile

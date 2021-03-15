@@ -15,5 +15,9 @@ jobs:
         SBT_SONATYPE_B64: ${{ secrets.SBT_SONATYPE_B64 }}
       run: ./.github/scripts/secrets.sh
     - uses: olafurpg/setup-scala@v10
+    - name: Update
+      run: sbt -batch update
+    - name: Compile
+      run: sbt -batch compile
     - name: Release
       run: sbt -batch "release with-defaults"

@@ -20,4 +20,4 @@ jobs:
     - name: Compile
       run: sbt -batch compile
     - name: Release Snapshot
-      run: sbt -batch publishSigned
+      run: sbt -batch "+publishSigned"

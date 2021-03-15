@@ -1,5 +1,9 @@
 # futil
 
+![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/alexklibisz/futil/CI/main)
+![Sonatype Nexus (Releases)](https://img.shields.io/nexus/r/com.klibisz.elastiknn/futil_2.12?server=https%3A%2F%2Foss.sonatype.org%2F) 
+![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/com.klibisz.elastiknn/futil_2.12?server=https%3A%2F%2Foss.sonatype.org)
+
 This library aims to add some useful functionality to Scala's Futures without introducing a full effect system.
 
 Scala's built-in [Futures](https://docs.scala-lang.org/overviews/core/futures.html) are a pretty good abstraction for 

@@ -3,6 +3,9 @@ name: "Release Snapshot"
 on:
   repository_dispatch:
     types: release-snapshot
+  push:
+    branches:
+      - main
 
 jobs:
   release:

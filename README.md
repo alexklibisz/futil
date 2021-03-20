@@ -223,8 +223,8 @@ val foos = Future.sequence((0 to 999).map(client.getFooById(_)))
 [Badge-Github-CI]: https://img.shields.io/github/workflow/status/alexklibisz/futil/CI/main
 [Link-Github-CI]: https://github.com/alexklibisz/futil/actions/workflows/pr.yml
 
-[Badge-Sonatype-Release]: https://img.shields.io/nexus/r/com.klibisz.elastiknn/futil_2.13?server=https%3A%2F%2Foss.sonatype.org%2F
-[Link-Sonatype-Release]: https://search.maven.org/artifact/com.klibisz.elastiknn/futil_2.13
+[Badge-Sonatype-Release]: https://img.shields.io/nexus/r/com.klibisz/futil_2.13?server=https%3A%2F%2Foss.sonatype.org%2F
+[Link-Sonatype-Release]: https://search.maven.org/artifact/com.klibisz/futil_2.13
 
-[Badge-Sonatype-Snapshot]: https://img.shields.io/nexus/s/com.klibisz.elastiknn/futil_2.13?server=https%3A%2F%2Foss.sonatype.org
+[Badge-Sonatype-Snapshot]: https://img.shields.io/nexus/s/com.klibisz/futil_2.13?server=https%3A%2F%2Foss.sonatype.org
 [Link-Sonatype-Snapshot]: https://oss.sonatype.org/content/repositories/snapshots/com/klibisz/futil/futil_2.13/

@@ -3,7 +3,7 @@ import sbtrelease.ReleaseStateTransformations._
 
 // TODO: change this to com.klibisz.futil once OSSRH provisioning is complete.
 // Needs to be Global, else sbt-sonatype and sonatype are unhappy.
-Global / organization := "com.klibisz.elastiknn"
+Global / organization := "com.klibisz.futil"
 
 lazy val scalaVersions = List("2.12.12", "2.13.5")
 

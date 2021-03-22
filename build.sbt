@@ -26,8 +26,13 @@ lazy val futil = project.in(file("futil"))
     name := "futil",
     description := "Zero-dependency utilities for Scala Futures",
     crossScalaVersions := scalaVersions,
-    libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.5" % Test,
+    libraryDependencies ++= Seq(
+      "org.scala-lang.modules" %% "scala-collection-compat" % "2.4.2",
+      "org.scalatest" %% "scalatest" % "3.2.5" % Test
+    ),
     scalacOptions ++= Seq(
+      "-feature",
+      "-language:higherKinds",
       "-Xfatal-warnings",
       "-deprecation",
       "-unchecked",

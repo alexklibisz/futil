@@ -78,8 +78,9 @@ object Futil {
     */
   final def traverseParN[A, B, M[X] <: IterableOnce[X]](
       n: Int
-  )(in: M[A])(fn: A => Future[B])(implicit bf: BuildFrom[M[A], Try[B], M[Try[B]]],
-                                  ec: ExecutionContext): Future[M[Try[B]]] = {
+  )(
+      in: M[A]
+  )(fn: A => Future[B])(implicit bf: BuildFrom[M[A], Try[B], M[Try[B]]], ec: ExecutionContext): Future[M[Try[B]]] = {
     val sem = semaphore(n)
     in.iterator
       .foldLeft(successful(bf.newBuilder(in))) { (f1, a: A) =>
@@ -92,8 +93,9 @@ object Futil {
   /**
     * Alias for [[traverseParN]] with n = 1.
     */
-  final def traverseSerial[A, B, M[X] <: IterableOnce[X]](in: M[A])(
-      fn: A => Future[B])(implicit bf: BuildFrom[M[A], Try[B], M[Try[B]]], ec: ExecutionContext): Future[M[Try[B]]] =
+  final def traverseSerial[A, B, M[X] <: IterableOnce[X]](
+      in: M[A]
+  )(fn: A => Future[B])(implicit bf: BuildFrom[M[A], Try[B], M[Try[B]]], ec: ExecutionContext): Future[M[Try[B]]] =
     traverseParN(1)(in)(fn)
 
   /**

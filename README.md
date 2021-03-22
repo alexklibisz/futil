@@ -15,6 +15,8 @@ for concurrent and asynchronous programming, but they can be difficult to introd
 If you're starting a green-field project then you should totally learn and use a real effect system.
 If you just need to limit the parallelism of some Futures or implement a simple Retry, you might give futil a try.
 
+**_Note_: I consider this feature-complete, but the exact interfaces might still change. Please don't use this in anything mission critical yet.**
+
 ## Recipes
 
 ### Setup

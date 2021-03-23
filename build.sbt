@@ -2,7 +2,7 @@ import com.jsuereth.sbtpgp.PgpKeys._
 import sbtrelease.ReleaseStateTransformations._
 
 // Needs to be Global, else sbt-sonatype and sonatype are unhappy.
-Global / organization := "com.klibisz"
+Global / organization := "com.klibisz.futil"
 
 lazy val scalaVersions = List("2.12.12", "2.13.5")
 
@@ -46,6 +46,7 @@ lazy val futil = project.in(file("futil"))
 
     // sbt-sonatype settings
     publishTo := sonatypePublishToBundle.value,
+    sonatypeProfileName := "com.klibisz",
     publishMavenStyle := true,
     licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
     homepage := Some(url("https://github.com/alexklibisz/futil")),

@@ -3,6 +3,9 @@ import sbtrelease.ReleaseStateTransformations._
 
 lazy val scalaVersions = List("2.12.12", "2.13.5")
 
+Global / organization := "com.klibisz.futil"
+sonatypeProfileName := "com.klibisz"
+
 lazy val noPublishSettings = Seq(
   publish,
   publishArtifact,
@@ -15,14 +18,12 @@ lazy val root = project.in(file("."))
   .aggregate(futil, docs)
   .settings(
     name := "futil-root",
-    organization := "com.klibisz.futil",
     noPublishSettings
   )
 
 lazy val futil = project.in(file("futil"))
   .settings(
     name := "futil",
-    organization := "com.klibisz.futil",
     description := "Zero-dependency utilities for Scala Futures",
     crossScalaVersions := scalaVersions,
     libraryDependencies ++= Seq(
@@ -45,7 +46,6 @@ lazy val futil = project.in(file("futil"))
 
     // sbt-sonatype settings
     publishTo := sonatypePublishToBundle.value,
-    sonatypeProfileName := "com.klibisz",
     publishMavenStyle := true,
     licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
     homepage := Some(url("https://github.com/alexklibisz/futil")),

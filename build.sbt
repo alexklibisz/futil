@@ -1,10 +1,10 @@
 import com.jsuereth.sbtpgp.PgpKeys._
 import sbtrelease.ReleaseStateTransformations._
 
-// Needs to be Global, else sbt-sonatype and sonatype are unhappy.
-Global / organization := "com.klibisz"
-
 lazy val scalaVersions = List("2.12.12", "2.13.5")
+
+Global / organization := "com.klibisz.futil"
+sonatypeProfileName := "com.klibisz"
 
 lazy val noPublishSettings = Seq(
   publish,
@@ -50,7 +50,7 @@ lazy val futil = project.in(file("futil"))
     licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
     homepage := Some(url("https://github.com/alexklibisz/futil")),
     scmInfo := Some(ScmInfo(url("https://github.com/alexklibisz/futil"), "scm:git@github.com:alexklibisz/futil.git")),
-    developers += Developer(id="alexklibisz", name="Alex Klibisz", email="aklibisz@gmail.com", url=url("https://alexklibisz.com")),
+    developers += Developer(id="alexklibisz", name="Alex Klibisz", email="aklibisz@gmail.com", url=url("https://alexklibisz.com"))
   )
 
 lazy val docs = project.in(file("docs"))

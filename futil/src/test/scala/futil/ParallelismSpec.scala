@@ -18,7 +18,7 @@ class ParallelismSpec extends AsyncFreeSpec with GlobalExecutionContext with Mat
       val as = (1 to 1000).toVector
       val f = (i: Int) => Future.successful(i)
       Futil.traverseParN(10)(as)(f).flatMap { bs =>
-        bs shouldBe as.map(Success(_))
+        bs shouldBe as
       }
     }
 
@@ -26,7 +26,7 @@ class ParallelismSpec extends AsyncFreeSpec with GlobalExecutionContext with Mat
       final case class Expected(i: Int) extends Throwable
       val as = (1 to 1000).toVector
       val f = (i: Int) => Future.failed[Int](Expected(i))
-      Futil.traverseParN(10)(as)(f).flatMap { bs =>
+      Futil.traverseParN(10)(as)(f(_).transformWith(Future.successful)).flatMap { bs =>
         bs shouldBe as.map(Expected).map(Failure(_))
       }
     }
@@ -35,7 +35,7 @@ class ParallelismSpec extends AsyncFreeSpec with GlobalExecutionContext with Mat
       final case class Expected(i: Int) extends Throwable
       val as = (1 to 1000).toVector
       val f = (i: Int) => if (i % 2 == 0) Future.successful(i) else Future.failed(Expected(i))
-      Futil.traverseParN(10)(as)(f).flatMap { bs =>
+      Futil.traverseParN(10)(as)(f(_).transformWith(Future.successful)).flatMap { bs =>
         bs shouldBe as.map(i => if (i % 2 == 0) Success(i) else Failure(Expected(i)))
       }
     }

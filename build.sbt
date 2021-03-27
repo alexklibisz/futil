@@ -2,7 +2,7 @@ import com.jsuereth.sbtpgp.PgpKeys._
 import sbtrelease.ReleaseStateTransformations._
 
 // Needs to be Global, else sbt-sonatype and sonatype are unhappy.
-Global / organization := "com.klibisz.futil"
+// Global / organization := "com.klibisz.futil"
 
 lazy val scalaVersions = List("2.12.12", "2.13.5")
 
@@ -24,6 +24,7 @@ lazy val root = project.in(file("."))
 lazy val futil = project.in(file("futil"))
   .settings(
     name := "futil",
+    organization := "com.klibisz.futil",
     description := "Zero-dependency utilities for Scala Futures",
     crossScalaVersions := scalaVersions,
     libraryDependencies ++= Seq(

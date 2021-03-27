@@ -56,7 +56,7 @@ class ParallelismSpec extends AsyncFreeSpec with GlobalExecutionContext with Mat
           }
         } yield i
 
-      Futil.traverseParN(n)(as)(f).flatMap { bs =>
+      Futil.traverseParN(n)(as)(f(_).transformWith(Future.successful)).flatMap { bs =>
         bs.filter(_.isFailure) shouldBe Seq.empty
       }
     }
@@ -103,9 +103,9 @@ class ParallelismSpec extends AsyncFreeSpec with GlobalExecutionContext with Mat
     }
 
     "1 million mixed delays and fibonaccis" in {
-      val as = (0 to 999999)
+      val as: Seq[Int] = (0 to 999999)
       val f = (i: Int) =>
-        if (i % 2 == 0) Future(fib(i % 28)) else Futil.delay((i % 30000 + 10000).nanos)(Future.successful(()))
+        if (i % 2 == 0) Future(fib(i % 28)) else Futil.delay((i % 30000 + 10000).nanos)(Future.successful(i))
       Futil.traverseParN(2)(as)(f).flatMap(_.toVector.length shouldBe as.length)
     }
 
@@ -128,7 +128,7 @@ class ParallelismSpec extends AsyncFreeSpec with GlobalExecutionContext with Mat
           }
         } yield i
 
-      Futil.traverseSerial(as)(f).flatMap { bs =>
+      Futil.traverseSerial(as)(f(_).transformWith(Future.successful)).flatMap { bs =>
         bs.filter(_.isFailure) shouldBe Seq.empty
       }
     }

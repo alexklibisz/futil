@@ -80,11 +80,11 @@ object Futil {
       n: Int
   )(
       in: M[A]
-  )(fn: A => Future[B])(implicit bf: BuildFrom[M[A], Try[B], M[Try[B]]], ec: ExecutionContext): Future[M[Try[B]]] = {
+  )(fn: A => Future[B])(implicit bf: BuildFrom[M[A], B, M[B]], ec: ExecutionContext): Future[M[B]] = {
     val sem = semaphore(n)
     in.iterator
       .foldLeft(successful(bf.newBuilder(in))) { (f1, a: A) =>
-        val f2 = sem.withPermit(thunk(fn(a).transformWith(Future.successful)))
+        val f2 = sem.withPermit(thunk(fn(a)))
         f1.zipWith(f2)(_ += _)
       }
       .map(_.result())(ec)
@@ -95,7 +95,7 @@ object Futil {
     */
   final def traverseSerial[A, B, M[X] <: IterableOnce[X]](
       in: M[A]
-  )(fn: A => Future[B])(implicit bf: BuildFrom[M[A], Try[B], M[Try[B]]], ec: ExecutionContext): Future[M[Try[B]]] =
+  )(fn: A => Future[B])(implicit bf: BuildFrom[M[A], B, M[B]], ec: ExecutionContext): Future[M[B]] =
     traverseParN(1)(in)(fn)
 
   /**

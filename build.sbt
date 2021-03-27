@@ -15,6 +15,7 @@ lazy val root = project.in(file("."))
   .aggregate(futil, docs)
   .settings(
     name := "futil-root",
+    organization := "com.klibisz.futil",
     noPublishSettings
   )
 

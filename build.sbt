@@ -19,7 +19,6 @@ lazy val root = project.in(file("."))
   )
 
 lazy val futil = project.in(file("futil"))
-  .enablePlugins(Sonatype)
   .settings(
     name := "futil",
     organization := "com.klibisz.futil",
@@ -51,6 +50,20 @@ lazy val futil = project.in(file("futil"))
     homepage := Some(url("https://github.com/alexklibisz/futil")),
     scmInfo := Some(ScmInfo(url("https://github.com/alexklibisz/futil"), "scm:git@github.com:alexklibisz/futil.git")),
     developers += Developer(id="alexklibisz", name="Alex Klibisz", email="aklibisz@gmail.com", url=url("https://alexklibisz.com")),
+    // Slightly modified to work with sbt-sonatype.
+    releaseProcess := Seq[ReleaseStep](
+      checkSnapshotDependencies,
+      inquireVersions,
+      runClean,
+      setReleaseVersion,
+      commitReleaseVersion,
+      tagRelease,
+      releaseStepCommandAndRemaining("+publishSigned"),
+      releaseStepCommand("sonatypeBundleRelease"),
+      setNextVersion,
+      commitNextVersion,
+      pushChanges
+    )
   )
 
 lazy val docs = project.in(file("docs"))
@@ -81,18 +94,3 @@ releaseNextVersion := { v: String =>
 }
 
 releaseCrossBuild := true
-
-// Slightly modified to work with sbt-sonatype.
-releaseProcess := Seq[ReleaseStep](
-  checkSnapshotDependencies,
-  inquireVersions,
-  runClean,
-  setReleaseVersion,
-  commitReleaseVersion,
-  tagRelease,
-  releaseStepCommandAndRemaining("+publishSigned"),
-  releaseStepCommand("sonatypeBundleRelease"),
-  setNextVersion,
-  commitNextVersion,
-  pushChanges
-)

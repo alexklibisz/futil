@@ -49,21 +49,7 @@ lazy val futil = project.in(file("futil"))
     licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
     homepage := Some(url("https://github.com/alexklibisz/futil")),
     scmInfo := Some(ScmInfo(url("https://github.com/alexklibisz/futil"), "scm:git@github.com:alexklibisz/futil.git")),
-    developers += Developer(id="alexklibisz", name="Alex Klibisz", email="aklibisz@gmail.com", url=url("https://alexklibisz.com")),
-    // Slightly modified to work with sbt-sonatype.
-    releaseProcess := Seq[ReleaseStep](
-      checkSnapshotDependencies,
-      inquireVersions,
-      runClean,
-      setReleaseVersion,
-      commitReleaseVersion,
-      tagRelease,
-      releaseStepCommandAndRemaining("+publishSigned"),
-      releaseStepCommand("sonatypeBundleRelease"),
-      setNextVersion,
-      commitNextVersion,
-      pushChanges
-    )
+    developers += Developer(id="alexklibisz", name="Alex Klibisz", email="aklibisz@gmail.com", url=url("https://alexklibisz.com"))
   )
 
 lazy val docs = project.in(file("docs"))
@@ -94,3 +80,18 @@ releaseNextVersion := { v: String =>
 }
 
 releaseCrossBuild := true
+
+// Slightly modified to work with sbt-sonatype.
+releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies,
+  inquireVersions,
+  runClean,
+  setReleaseVersion,
+  commitReleaseVersion,
+  tagRelease,
+  releaseStepCommandAndRemaining("+publishSigned"),
+  releaseStepCommand("sonatypeBundleRelease"),
+  setNextVersion,
+  commitNextVersion,
+  pushChanges
+)

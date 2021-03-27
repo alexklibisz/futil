@@ -73,7 +73,6 @@ object Futil {
 
   /**
     * Use function f to map each element from `in` to a Future[B], running at most n Futures at a time.
-    * Lifts the result of the Future[B] into a Future[Try[B]\] to prevent failing the entire Seq.
     * Results are returned in the original order.
     */
   final def traverseParN[A, B, M[X] <: IterableOnce[X]](

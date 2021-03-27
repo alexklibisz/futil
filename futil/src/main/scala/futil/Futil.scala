@@ -73,18 +73,17 @@ object Futil {
 
   /**
     * Use function f to map each element from `in` to a Future[B], running at most n Futures at a time.
-    * Lifts the result of the Future[B] into a Future[Try[B]\] to prevent failing the entire Seq.
     * Results are returned in the original order.
     */
   final def traverseParN[A, B, M[X] <: IterableOnce[X]](
       n: Int
   )(
       in: M[A]
-  )(fn: A => Future[B])(implicit bf: BuildFrom[M[A], Try[B], M[Try[B]]], ec: ExecutionContext): Future[M[Try[B]]] = {
+  )(fn: A => Future[B])(implicit bf: BuildFrom[M[A], B, M[B]], ec: ExecutionContext): Future[M[B]] = {
     val sem = semaphore(n)
     in.iterator
       .foldLeft(successful(bf.newBuilder(in))) { (f1, a: A) =>
-        val f2 = sem.withPermit(thunk(fn(a).transformWith(Future.successful)))
+        val f2 = sem.withPermit(thunk(fn(a)))
         f1.zipWith(f2)(_ += _)
       }
       .map(_.result())(ec)
@@ -95,7 +94,7 @@ object Futil {
     */
   final def traverseSerial[A, B, M[X] <: IterableOnce[X]](
       in: M[A]
-  )(fn: A => Future[B])(implicit bf: BuildFrom[M[A], Try[B], M[Try[B]]], ec: ExecutionContext): Future[M[Try[B]]] =
+  )(fn: A => Future[B])(implicit bf: BuildFrom[M[A], B, M[B]], ec: ExecutionContext): Future[M[B]] =
     traverseParN(1)(in)(fn)
 
   /**
